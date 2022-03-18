@@ -12,6 +12,12 @@ module.exports = function (server, Category) {
     response.json(result)
   })
 
+  //To get one category
+  server.get("/data/categories/:id", async (request, response) => {
+    let result = await Category.findById(request.params.id)
+    response.json(result)
+  })
+
   //To delete a category
   server.delete("/data/categories/:id", async (request, response) => {
     await Category.findByIdAndRemove(request.params.id)

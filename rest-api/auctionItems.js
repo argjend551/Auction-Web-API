@@ -6,7 +6,7 @@ module.exports = function (server, AuctionItem) {
     response.json(result)
   })
 
-  //To get all auctionItems
+  //To get all auctionItems with all info
   server.get("/data/auctionItems", async (request, response) => {
     let result = await AuctionItem.find()
     response.json(result)

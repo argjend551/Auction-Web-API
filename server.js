@@ -42,7 +42,8 @@ const Customer = mongoose.model(
 const Category = mongoose.model(
   "Category",
   new mongoose.Schema({
-    categoryName: String
+    name: String,
+    auctionItems: [{ type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" }]
   })
 )
 //Schema for AuctionItem
@@ -50,8 +51,7 @@ const AuctionItem = mongoose.model(
   "AuctionItem",
   new mongoose.Schema({
     name: String,
-    category: String,
-    seller: [{ type: mongoose.Schema.Types.ObjectId, ref: "Customer" }],
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
     startTime: Date,
     endTime: Date,
     startingPrice: Number,
