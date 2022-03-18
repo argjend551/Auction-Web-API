@@ -20,7 +20,7 @@ module.exports = function (server, Category) {
 
   //To delete a category
   server.delete("/data/categories/:id", async (request, response) => {
-    await Category.findByIdAndRemove(request.params.id)
+    await Category.findById(request.params.id).remove()
     response.json({ result: "Category deleted" })
   })
 }
