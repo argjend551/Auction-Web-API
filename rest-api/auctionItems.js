@@ -14,7 +14,7 @@ module.exports = function (server, AuctionItem) {
 
   //To get one auctionItem
   server.get("/data/auctionItems/:id", async (request, response) => {
-    let result = await AuctionItem.find()
+    let result = await AuctionItem.findById(request.params.id)
     response.json(result)
   })
 
