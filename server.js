@@ -38,9 +38,21 @@ const Customer = mongoose.model(
     publicEmail: String,
   })
 );
+
+// Bid model
+const Bid = mongoose.model(
+  "Bid",
+  new mongoose.Schema({
+    auctionItem: [{ type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" }],
+    buyer: [{ type: mongoose.Schema.Types.ObjectId, ref: "Customer" }],
+    bidAmount: Number
+  })
+)
+
 // rest api
 const RestCustomer = require("./rest-api/customer.js");
 const RestAuthentication = require("./rest-api/authentication.js");
+const RestBid = require("./rest-api/bid.js");
 
 // Connect to the mongo database atlas
 async function start() {
@@ -54,5 +66,6 @@ async function start() {
   // add REST api
   RestCustomer(server, Customer);
   RestAuthentication(server, Customer);
+  RestBid(server, Bid);
 }
 start();
