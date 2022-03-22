@@ -61,7 +61,8 @@ const AuctionItem = mongoose.model(
     startingPrice: Number,
     reservationPrice: Number,
     itemPicture: [{ type: String, required: true }],
-    description: { type: String, required: true }
+    description: { type: String, required: true },
+    status: Boolean
   })
 )
 
