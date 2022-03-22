@@ -38,7 +38,7 @@ const Customer = mongoose.model(
     publicEmail: String
   })
 )
-//Schema for Categories
+//Model and Schema for Categories
 const Category = mongoose.model(
   "Category",
   new mongoose.Schema({
@@ -46,19 +46,22 @@ const Category = mongoose.model(
     auctionItems: [{ type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" }]
   })
 )
-//Schema for AuctionItem
+//Model and Schema for AuctionItem
 const AuctionItem = mongoose.model(
   "AuctionItem",
   new mongoose.Schema({
-    name: String,
-    seller: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
-    startTime: Date,
-    endTime: Date,
+    name: { type: String, required: true },
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true
+    },
+    startTime: { type: Date, required: true },
+    endTime: { type: Date, required: true },
     startingPrice: Number,
     reservationPrice: Number,
-    itemPicture: String,
-    description: String,
-    auctionStatus: String
+    itemPicture: [{ type: String, required: true }],
+    description: { type: String, required: true }
   })
 )
 

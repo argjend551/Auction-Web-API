@@ -18,9 +18,28 @@ module.exports = function (server, AuctionItem) {
     response.json(result)
   })
 
+  //To get one auctionItem with info to be shown in detailed view. Bids not yet added.
+  server.get(
+    "/data/detailedViewAuctionItems/:id",
+    async (request, response) => {
+      let result = await AuctionItem.findById(request.params.id)
+
+        .select("name")
+        .select("startTime")
+        .select("endTime")
+        .select("startingPrice")
+        .select("itemPicture")
+        .select("description")
+        .populate("seller", ["firstname", "lastname", "address.city"])
+        .exec()
+
+      response.json(result)
+    }
+  )
+
   //To get all auctionItems summarized in a listview. TopBid and number of bids
-  // can't be shown yet, no collection for bid.
-  server.get("/data/listview-auctionItems", async (request, response) => {
+  // not yet added to be shown.
+  server.get("/data/listViewAuctionItems", async (request, response) => {
     let result = await AuctionItem.find()
       .select("itemPicture")
       .select("name")
