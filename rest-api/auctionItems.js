@@ -44,6 +44,7 @@ module.exports = function (server, AuctionItem) {
       .select("itemPicture")
       .select("name")
       .select("endTime")
+
     response.json(result)
   })
 
@@ -54,9 +55,14 @@ module.exports = function (server, AuctionItem) {
   })
 
   //Search for auctionItems
-  server.get('/data/listview-auctionItems/:search', async (request, response) => {
-    let result = await AuctionItem.find({ "name": { $regex: request.params.search, $options: 'i' } })
-    console.log(request.params.search)
-    response.json(result)
-  })
+  server.get(
+    "/data/listview-auctionItems/:search",
+    async (request, response) => {
+      let result = await AuctionItem.find({
+        name: { $regex: request.params.search, $options: "i" }
+      })
+      console.log(request.params.search)
+      response.json(result)
+    }
+  )
 }
