@@ -61,10 +61,10 @@ const AuctionItem = mongoose.model(
     startingPrice: Number,
     reservationPrice: Number,
     itemPicture: [{ type: String, required: true }],
-    description: { type: String, required: true }
-
+    description: { type: String, required: true },
+    status: Boolean
   })
-);
+)
 
 // Bid model
 const Bid = mongoose.model(
@@ -77,11 +77,11 @@ const Bid = mongoose.model(
 );
 
 // rest api
-
 const RestCustomer = require("./rest-api/customer.js")
 const RestAuthentication = require("./rest-api/authentication.js")
 const RestAuctionItems = require("./rest-api/auctionItems.js")
 const RestCategory = require("./rest-api/category.js")
+
 const RestBid = require("./rest-api/bid.js");
 
 
@@ -95,11 +95,11 @@ async function start() {
     (e) => console.error(e)
   )
   // add REST api
-
   RestCustomer(server, Customer)
   RestAuthentication(server, Customer)
   RestAuctionItems(server, AuctionItem)
   RestCategory(server, Category)
   RestBid(server, Bid);
+
 }
 start()
