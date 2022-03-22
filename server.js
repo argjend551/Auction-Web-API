@@ -65,11 +65,22 @@ const AuctionItem = mongoose.model(
   })
 )
 
+// Bid model
+const Bid = mongoose.model(
+  "Bid",
+  new mongoose.Schema({
+    auctionItem: [{ type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" }],
+    buyer: [{ type: mongoose.Schema.Types.ObjectId, ref: "Customer" }],
+    bidAmount: Number
+  })
+)
+
 // rest api
 const RestCustomer = require("./rest-api/customer.js")
 const RestAuthentication = require("./rest-api/authentication.js")
 const RestAuctionItems = require("./rest-api/auctionItems.js")
 const RestCategory = require("./rest-api/category.js")
+const RestBid = require("./rest-api/bid.js")
 
 // Connect to the mongo database atlas
 async function start() {
@@ -85,5 +96,6 @@ async function start() {
   RestAuthentication(server, Customer)
   RestAuctionItems(server, AuctionItem)
   RestCategory(server, Category)
+  RestBid(server, Bid)
 }
 start()
