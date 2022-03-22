@@ -21,7 +21,7 @@ module.exports = function (server, Bid) {
   });
 
   // Remove the bid
-  server.delete("/data/customer/:id", async (request, response) => {
+  server.delete("/data/bid/:id", async (request, response) => {
     let result = await Bid.findByIdAndRemove(request.params.id);
     response.json("Bid " + request.body.auctionItem + " is removed");
   });

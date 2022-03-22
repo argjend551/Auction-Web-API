@@ -70,8 +70,8 @@ const AuctionItem = mongoose.model(
 const Bid = mongoose.model(
   "Bid",
   new mongoose.Schema({
-    auctionItem: [{ type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" }],
-    buyer: [{ type: mongoose.Schema.Types.ObjectId, ref: "Customer" }],
+    auctionItem: { type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" },
+    buyer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
     bidAmount: Number
   })
 );

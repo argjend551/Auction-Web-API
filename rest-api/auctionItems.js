@@ -53,7 +53,7 @@ module.exports = function (server, AuctionItem) {
     response.json({ result: "Item deleted" })
   })
 
-  //Search for auctionItems
+  //Search for auctionItems User Stories 3
   server.get('/data/listview-auctionItems/:search', async (request, response) => {
     let result = await AuctionItem.find({ "name": { $regex: request.params.search, $options: 'i' } })
     console.log(request.params.search)
