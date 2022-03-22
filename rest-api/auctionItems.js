@@ -54,7 +54,7 @@ module.exports = function (server, AuctionItem) {
     response.json({ result: "Item deleted" })
   })
 
-  //Search for auctionItems
+  //Search for auctionItems User Stories 3
   server.get(
     "/data/listview-auctionItems/:search",
     async (request, response) => {
