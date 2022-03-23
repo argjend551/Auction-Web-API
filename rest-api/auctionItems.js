@@ -44,6 +44,19 @@ module.exports = function (server, AuctionItem) {
       .select("itemPicture")
       .select("name")
       .select("endTime")
+
+    response.json(result)
+  })
+
+  //To get auctionItems per category summarized in a listview. TopBid and number of bids
+  // not yet added to be shown.
+  server.get("/data/listViewAuctionItems/:id", async (request, response) => {
+    let result = await AuctionItem.where("category")
+      .equals(request.params.id)
+      .select("itemPicture")
+      .select("name")
+      .select("endTime")
+
     response.json(result)
   })
 
@@ -54,9 +67,14 @@ module.exports = function (server, AuctionItem) {
   })
 
   //Search for auctionItems User Stories 3
-  server.get('/data/listview-auctionItems/:search', async (request, response) => {
-    let result = await AuctionItem.find({ "name": { $regex: request.params.search, $options: 'i' } })
-    console.log(request.params.search)
-    response.json(result)
-  })
+  server.get(
+    "/data/listview-auctionItems/:search",
+    async (request, response) => {
+      let result = await AuctionItem.find({
+        name: { $regex: request.params.search, $options: "i" }
+      })
+      console.log(request.params.search)
+      response.json(result)
+    }
+  )
 }
