@@ -48,6 +48,18 @@ module.exports = function (server, AuctionItem) {
     response.json(result)
   })
 
+  //To get auctionItems per category summarized in a listview. TopBid and number of bids
+  // not yet added to be shown.
+  server.get("/data/listViewAuctionItems/:id", async (request, response) => {
+    let result = await AuctionItem.where("category")
+      .equals(request.params.id)
+      .select("itemPicture")
+      .select("name")
+      .select("endTime")
+
+    response.json(result)
+  })
+
   //To delete an auctionItem
   server.delete("/data/auctionItems/:id", async (request, response) => {
     await AuctionItem.findById(request.params.id).remove()
