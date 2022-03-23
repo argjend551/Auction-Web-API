@@ -1,4 +1,4 @@
-module.exports = function (server, AuctionItem) {
+module.exports = function (server, AuctionItem, Bid) {
   //to add an auctionItem
   server.post("/data/auctionItems", async (request, response) => {
     let item = new AuctionItem(request.body)
@@ -18,22 +18,28 @@ module.exports = function (server, AuctionItem) {
     response.json(result)
   })
 
-  //To get one auctionItem with info to be shown in detailed view. Bids not yet added.
+  //To get one auctionItem with info to be shown in detailed view.
   server.get(
-    "/data/detailedViewAuctionItems/:id",
+    "/data/detailedViewAuctionItems/:auctionItemId",
     async (request, response) => {
-      let result = await AuctionItem.findById(request.params.id)
-
-        .select("name")
-        .select("startTime")
-        .select("endTime")
-        .select("startingPrice")
-        .select("itemPicture")
-        .select("description")
+      let bid = await Bid.where("auctionItem")
+        .equals(request.params.auctionItemId)
+        .select("buyers")
+      let bidList = bid[bid.length - 1].buyers
+      let currentBid = bidList[bidList.length - 1].bidAmount
+      let numberOfBids = bidList.length
+      let item = await AuctionItem.findById(request.params.auctionItemId)
+        .select([
+          "name",
+          "startTime",
+          "endTime",
+          "startingPrice",
+          "itemPicture",
+          "description"
+        ])
         .populate("seller", ["firstname", "lastname", "address.city"])
         .exec()
-
-      response.json(result)
+      response.json({ item, currentBid, numberOfBids })
     }
   )
 
@@ -50,15 +56,18 @@ module.exports = function (server, AuctionItem) {
 
   //To get auctionItems per category summarized in a listview. TopBid and number of bids
   // not yet added to be shown.
-  server.get("/data/listViewAuctionItems/:id", async (request, response) => {
-    let result = await AuctionItem.where("category")
-      .equals(request.params.id)
-      .select("itemPicture")
-      .select("name")
-      .select("endTime")
+  server.get(
+    "/data/listViewAuctionItems/:categoryId",
+    async (request, response) => {
+      let result = await AuctionItem.where("category")
+        .equals(request.params.categoryId)
+        .select("itemPicture")
+        .select("name")
+        .select("endTime")
 
-    response.json(result)
-  })
+      response.json(result)
+    }
+  )
 
   //To delete an auctionItem
   server.delete("/data/auctionItems/:id", async (request, response) => {

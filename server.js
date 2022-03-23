@@ -73,10 +73,12 @@ const Bid = mongoose.model(
   "Bid",
   new mongoose.Schema({
     auctionItem: { type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" },
-    buyers: [{
-      buyer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
-      bidAmount: Number
-    }],
+    buyers: [
+      {
+        buyer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+        bidAmount: Number
+      }
+    ],
     seller: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" }
   })
 )
@@ -101,7 +103,7 @@ async function start() {
   // add REST api
   RestCustomer(server, Customer)
   RestAuthentication(server, Customer)
-  RestAuctionItems(server, AuctionItem)
+  RestAuctionItems(server, AuctionItem, Bid)
   RestCategory(server, Category)
   RestBid(server, Bid)
 }
