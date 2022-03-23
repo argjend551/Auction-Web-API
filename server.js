@@ -79,7 +79,10 @@ const Bid = mongoose.model(
         bidAmount: Number
       }
     ],
-    seller: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" }
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer"
+    }
   })
 )
 

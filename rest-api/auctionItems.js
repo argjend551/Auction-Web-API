@@ -81,8 +81,27 @@ module.exports = function (server, AuctionItem, Bid) {
     async (request, response) => {
       let result = await AuctionItem.find({
         name: { $regex: request.params.search, $options: "i" }
-      })
-      console.log(request.params.search)
+      }).select("name")
+        .select("endTime")
+        .select("startingPrice")
+        .select("itemPicture")
+        .select("description")
+      response.json(result)
+    }
+  )
+  //Search aucntionItem in a catagories for User Stories 15
+  server.get(
+    "/data/listViewAuctionItems/:categoryID/:search",
+    async (request, response) => {
+      let result = await AuctionItem.find({
+        category: request.params.categoryID
+      }).find({
+        name: { $regex: request.params.search, $options: "i" }
+      }).select("name")
+        .select("endTime")
+        .select("startingPrice")
+        .select("itemPicture")
+        .select("description")
       response.json(result)
     }
   )
