@@ -129,4 +129,30 @@ module.exports = function (server, AuctionItem, Bid) {
       response.json(result)
     }
   )
+
+  // PUT (update, update) WIP
+  server.put('/data/auctionItems', async (request, response) => {
+
+    let result = await AuctionItem.find()
+    let logDates;
+
+    let index = -1;
+
+    result.forEach(element => {
+
+      index += 1;
+      const dateA = new Date(element.startTime);
+      const dateB = new Date(element.endTime);
+
+      // For debugging purposes this is currently changable like this 
+      // but in live version it will be set by current time of date.
+      const checkDateRange = new Date("2022-03-20T11:00:00.000Z");
+
+      // We use getTime() method to get the date as milliseconds since epoch
+      const isDateCBetweenAandB = dateA.getTime() <= checkDateRange.getTime() && checkDateRange.getTime() <= dateB.getTime();
+      logDates += "Auction:" + index + " shouldBeActive : " + isDateCBetweenAandB + " ";
+    });
+
+    response.json(logDates);
+  })
 }
