@@ -25,9 +25,14 @@ module.exports = function (server, AuctionItem, Bid) {
       let bid = await Bid.where("auctionItem")
         .equals(request.params.auctionItemId)
         .select("buyers")
-      let bidList = bid[bid.length - 1].buyers
-      let currentBid = bidList[bidList.length - 1].bidAmount
-      let numberOfBids = bidList.length
+      let bidList, currentBid, numberOfBids
+      if (bid[0] === undefined) {
+        ;(currentBid = 0), (numberOfBids = 0)
+      } else {
+        bidList = bid[bid.length - 1].buyers
+        currentBid = bidList[bidList.length - 1].bidAmount
+        numberOfBids = bidList.length
+      }
       let item = await AuctionItem.findById(request.params.auctionItemId)
         .select([
           "name",
@@ -43,14 +48,30 @@ module.exports = function (server, AuctionItem, Bid) {
     }
   )
 
-  //To get all auctionItems summarized in a listview. TopBid and number of bids
-  // not yet added to be shown.
+  //To get all auctionItems summarized in a listview.
   server.get("/data/listViewAuctionItems", async (request, response) => {
-    let result = await AuctionItem.find()
+    let bids = await Bid.find()
+    let auctionItems = await AuctionItem.find()
       .select("itemPicture")
       .select("name")
       .select("endTime")
-
+    let result = []
+    let currentBid, numberOfBids, bid, item
+    for (let i = 0; i < auctionItems.length; i++) {
+      item = auctionItems[i]
+      for (let j = 0; j < bids.length; j++) {
+        bid = bids[j]
+        if (String(bid.auctionItem) === String(item._id)) {
+          currentBid = bid.buyers[bid.buyers.length - 1].bidAmount
+          numberOfBids = bid.buyers.length
+          result.push({ item, currentBid, numberOfBids })
+        } else {
+          currentBid = 0
+          numberOfBids = 0
+          result.push({ item, currentBid, numberOfBids })
+        }
+      }
+    }
     response.json(result)
   })
 
@@ -81,7 +102,8 @@ module.exports = function (server, AuctionItem, Bid) {
     async (request, response) => {
       let result = await AuctionItem.find({
         name: { $regex: request.params.search, $options: "i" }
-      }).select("name")
+      })
+        .select("name")
         .select("endTime")
         .select("startingPrice")
         .select("itemPicture")
@@ -95,9 +117,11 @@ module.exports = function (server, AuctionItem, Bid) {
     async (request, response) => {
       let result = await AuctionItem.find({
         category: request.params.categoryID
-      }).find({
-        name: { $regex: request.params.search, $options: "i" }
-      }).select("name")
+      })
+        .find({
+          name: { $regex: request.params.search, $options: "i" }
+        })
+        .select("name")
         .select("endTime")
         .select("startingPrice")
         .select("itemPicture")
