@@ -75,16 +75,33 @@ module.exports = function (server, AuctionItem, Bid) {
     response.json(result)
   })
 
-  //To get auctionItems per category summarized in a listview. TopBid and number of bids
-  // not yet added to be shown.
+  //To get auctionItems per category summarized in a listview.
   server.get(
     "/data/listViewAuctionItems/:categoryId",
     async (request, response) => {
-      let result = await AuctionItem.where("category")
+      let bids = await Bid.find()
+      let auctionItems = await AuctionItem.where("category")
         .equals(request.params.categoryId)
         .select("itemPicture")
         .select("name")
         .select("endTime")
+      let result = []
+      let currentBid, numberOfBids, bid, item
+      for (let i = 0; i < auctionItems.length; i++) {
+        item = auctionItems[i]
+        for (let j = 0; j < bids.length; j++) {
+          bid = bids[j]
+          if (String(bid.auctionItem) === String(item._id)) {
+            currentBid = bid.buyers[bid.buyers.length - 1].bidAmount
+            numberOfBids = bid.buyers.length
+            result.push({ item, currentBid, numberOfBids })
+          } else {
+            currentBid = 0
+            numberOfBids = 0
+            result.push({ item, currentBid, numberOfBids })
+          }
+        }
+      }
 
       response.json(result)
     }
@@ -131,28 +148,29 @@ module.exports = function (server, AuctionItem, Bid) {
   )
 
   // PUT (update, update) WIP
-  server.put('/data/auctionItems', async (request, response) => {
-
+  server.put("/data/auctionItems", async (request, response) => {
     let result = await AuctionItem.find()
-    let logDates;
+    let logDates
 
-    let index = -1;
+    let index = -1
 
-    result.forEach(element => {
+    result.forEach((element) => {
+      index += 1
+      const dateA = new Date(element.startTime)
+      const dateB = new Date(element.endTime)
 
-      index += 1;
-      const dateA = new Date(element.startTime);
-      const dateB = new Date(element.endTime);
-
-      // For debugging purposes this is currently changable like this 
+      // For debugging purposes this is currently changable like this
       // but in live version it will be set by current time of date.
-      const checkDateRange = new Date("2022-03-20T11:00:00.000Z");
+      const checkDateRange = new Date("2022-03-20T11:00:00.000Z")
 
       // We use getTime() method to get the date as milliseconds since epoch
-      const isDateCBetweenAandB = dateA.getTime() <= checkDateRange.getTime() && checkDateRange.getTime() <= dateB.getTime();
-      logDates += "Auction:" + index + " shouldBeActive : " + isDateCBetweenAandB + " ";
-    });
+      const isDateCBetweenAandB =
+        dateA.getTime() <= checkDateRange.getTime() &&
+        checkDateRange.getTime() <= dateB.getTime()
+      logDates +=
+        "Auction:" + index + " shouldBeActive : " + isDateCBetweenAandB + " "
+    })
 
-    response.json(logDates);
+    response.json(logDates)
   })
 }
