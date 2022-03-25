@@ -81,7 +81,8 @@ const Bid = mongoose.model(
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer"
-    }
+    },
+    status: Boolean
   })
 )
 
@@ -107,6 +108,6 @@ async function start() {
   RestAuthentication(server, Customer)
   RestAuctionItems(server, AuctionItem, Bid)
   RestCategory(server, Category)
-  RestBid(server, Bid)
+  RestBid(server, Bid, AuctionItem)
 }
 start()
