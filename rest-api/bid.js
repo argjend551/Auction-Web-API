@@ -17,7 +17,7 @@ module.exports = function (server, Bid, AuctionItem) {
     let startPrice = auctionitem.startingPrice;
     let auctionActiv = auctionitem.status;
     let auctionEnded = auctionitem.endTime;
-    let nowTime = new Date("2022-03-20T11:00:00.000Z");
+    let nowTime = new Date();
 
     if (auctionActiv && auctionEnded > nowTime) {
 
@@ -34,11 +34,11 @@ module.exports = function (server, Bid, AuctionItem) {
             let result = await item.save();
             return response.json(result);
           } else if (newBid == currentBid || newBid < currentBid || newBid < startPrice || newBid == startPrice) {
-            return response.json("The currentBid: " + currentBid + " kr\n" + "The starting pirce: "
-              + startPrice + " the bid must be higher than both of them");
+            return response.json("The currentBid: " + currentBid + " kr, " + "the starting pirce: "
+              + startPrice + " the bid must be higher than both of them.");
           }
         } else {
-          response.json("The seller cannot place a bid");
+          return response.json("The seller cannot place a bid");
         }
       } else if (newBid < startPrice || newBid == startPrice) {
         return response.json("The bid must be higher than starting price: " + startPrice + "kr")
@@ -47,14 +47,24 @@ module.exports = function (server, Bid, AuctionItem) {
         await response.json(result);
       }
     } else {
-      response.json("This auction is not active!")
+      return response.json("This auction is not active!")
     }
   });
 
-  // Get all bids
+  // Get all bids 
   server.get("/data/bid", async (request, response) => {
     let result = await Bid.find();
     response.json(result);
+  });
+
+  // Get bids that are active with the auctionItems endTime, name, status (true) User story 4 (task 4.2)
+  server.get("/data/activeBids-withAuctionItemDetail", async (request, response) => {
+    let nowTime = new Date();
+    let auctionItemWithBids = await Bid.find().populate(
+      "auctionItem",
+      "name endTime status",
+      { endTime: { $gt: nowTime }, auctionItem: { $ne: null } });
+    response.json(auctionItemWithBids)
   });
 
   // Get one bid
