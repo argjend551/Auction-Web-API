@@ -61,7 +61,6 @@ const AuctionItem = mongoose.model(
     startingPrice: Number,
     reservationPrice: Number,
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    bids: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bid", default: [] }],
     itemPicture: [{ type: String, required: true }],
     description: { type: String, required: true },
     status: Boolean

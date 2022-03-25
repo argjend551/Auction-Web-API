@@ -27,7 +27,7 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("buyers")
       let bidList, currentBid, numberOfBids
       if (bid[0] === undefined) {
-        ;(currentBid = 0), (numberOfBids = 0)
+        ; (currentBid = 0), (numberOfBids = 0)
       } else {
         bidList = bid[bid.length - 1].buyers
         currentBid = bidList[bidList.length - 1].bidAmount
@@ -128,7 +128,7 @@ module.exports = function (server, AuctionItem, Bid) {
       response.json(result)
     }
   )
-  //Search aucntionItem in a catagories for User Stories 15
+  //Search auctionItem in a catagories for User Stories 15
   server.get(
     "/data/listViewAuctionItems/:categoryID/:search",
     async (request, response) => {
