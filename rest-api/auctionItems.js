@@ -27,7 +27,7 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("buyers")
       let bidList, currentBid, numberOfBids
       if (bid[0] === undefined) {
-        ; (currentBid = 0), (numberOfBids = 0)
+        ;(currentBid = 0), (numberOfBids = 0)
       } else {
         bidList = bid[bid.length - 1].buyers
         currentBid = bidList[bidList.length - 1].bidAmount
@@ -57,19 +57,23 @@ module.exports = function (server, AuctionItem, Bid) {
       .select("endTime")
     let result = []
     let currentBid, numberOfBids, bid, item
+    let bidExists
     for (let i = 0; i < auctionItems.length; i++) {
       item = auctionItems[i]
+      bidExists = false
       for (let j = 0; j < bids.length; j++) {
         bid = bids[j]
         if (String(bid.auctionItem) === String(item._id)) {
+          bidExists = true
           currentBid = bid.buyers[bid.buyers.length - 1].bidAmount
           numberOfBids = bid.buyers.length
           result.push({ item, currentBid, numberOfBids })
-        } else {
-          currentBid = 0
-          numberOfBids = 0
-          result.push({ item, currentBid, numberOfBids })
         }
+      }
+      if (!bidExists) {
+        currentBid = 0
+        numberOfBids = 0
+        result.push({ item, currentBid, numberOfBids })
       }
     }
     response.json(result)
@@ -87,19 +91,23 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("endTime")
       let result = []
       let currentBid, numberOfBids, bid, item
+      let bidExists
       for (let i = 0; i < auctionItems.length; i++) {
         item = auctionItems[i]
+        bidExists = false
         for (let j = 0; j < bids.length; j++) {
           bid = bids[j]
           if (String(bid.auctionItem) === String(item._id)) {
+            bidExists = true
             currentBid = bid.buyers[bid.buyers.length - 1].bidAmount
             numberOfBids = bid.buyers.length
             result.push({ item, currentBid, numberOfBids })
-          } else {
-            currentBid = 0
-            numberOfBids = 0
-            result.push({ item, currentBid, numberOfBids })
           }
+        }
+        if (!bidExists) {
+          currentBid = 0
+          numberOfBids = 0
+          result.push({ item, currentBid, numberOfBids })
         }
       }
 
@@ -166,8 +174,8 @@ module.exports = function (server, AuctionItem, Bid) {
         dateA.getTime() <= checkDateRange.getTime() &&
         checkDateRange.getTime() <= dateB.getTime()
 
-      // Update the state 
-      element.status = isDateCBetweenAandB;
+      // Update the state
+      element.status = isDateCBetweenAandB
     })
 
     response.json(result)
