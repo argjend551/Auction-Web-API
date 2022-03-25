@@ -1,6 +1,6 @@
 // Bids
 
-module.exports = function (server, Bid) {
+module.exports = function (server, Bid, AuctionItem) {
   // Add new bid
   server.post("/data/bid", async (request, response) => {
     let buyer = request.body.buyers.buyer;
@@ -11,29 +11,43 @@ module.exports = function (server, Bid) {
     let newBuyer = {};
     newBuyer.buyer = request.body.buyers.buyer;
     newBuyer.bidAmount = request.body.buyers.bidAmount;
-    let buyersList = await Bid.find({ auctionItem: item.auctionItem }).select("buyers");
-    let bidList = buyersList[buyersList.length - 1].buyers;
-    let currentBid = bidList[bidList.length - 1].bidAmount;
 
-    if (itemIfExits.length != 0 && buyer !== seller && currentBid < newBid) {
-      let item = await Bid.findOneAndUpdate(
-        { auctionItem: request.body.auctionItem },
-        {
-          $push: {
-            buyers: newBuyer,
-          },
+    let auctionitem = await AuctionItem.findById(item.auctionItem);
+
+    let startPrice = auctionitem.startingPrice;
+    let auctionActiv = auctionitem.status;
+    let auctionEnded = auctionitem.endTime;
+    let nowTime = new Date("2022-03-20T11:00:00.000Z");
+
+    if (auctionActiv && auctionEnded > nowTime) {
+
+      if (itemIfExits != 0) {
+        let buyersList = await Bid.find({ auctionItem: item.auctionItem }).select("buyers");
+        let bidList = buyersList[buyersList.length - 1].buyers;
+        let currentBid = bidList[bidList.length - 1].bidAmount;
+
+        if (buyer !== seller) {
+          if (newBid > startPrice && newBid > currentBid) {
+            let item = await Bid.findOneAndUpdate(
+              { auctionItem: request.body.auctionItem },
+              { $push: { buyers: newBuyer } });
+            let result = await item.save();
+            return response.json(result);
+          } else if (newBid == currentBid || newBid < currentBid || newBid < startPrice || newBid == startPrice) {
+            return response.json("The currentBid: " + currentBid + " kr\n" + "The starting pirce: "
+              + startPrice + " the bid must be higher than both of them");
+          }
+        } else {
+          response.json("The seller cannot place a bid");
         }
-      );
-      let result = await item.save();
-      return response.json(result);
-    } if (newBid == currentBid || newBid < currentBid) {
-      return response.json("The bid must be higher than " + currentBid + " kr");
-    } if (buyer !== seller && newBid > currentBid) {
-      let result = await item.save();
-      await response.json(result);
-    }
-    else {
-      response.json("The seller cannot place a bid");
+      } else if (newBid < startPrice || newBid == startPrice) {
+        return response.json("The bid must be higher than starting price: " + startPrice + "kr")
+      } else {
+        let result = await item.save();
+        await response.json(result);
+      }
+    } else {
+      response.json("This auction is not active!")
     }
   });
 
