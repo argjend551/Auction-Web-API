@@ -49,10 +49,16 @@ module.exports = function (server, Bid) {
     response.json(result);
   });
 
-    // Get bids by customer
+  // Remove one bid
+  server.delete("/data/bid/:id", async (request, response) => {
+    let result = await Bid.findByIdAndRemove(request.params.id);
+    response.json("One bid is removed");
+  });
+
+  // Get bids by customer
   server.get("/data/bid-customer/:id", async (request, response) => {
     let result = await Bid.find({ buyer: request.body.buyers.buyer });
-    response.json(result );
+    response.json(result);
   });
 
 };
