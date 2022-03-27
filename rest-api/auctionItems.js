@@ -50,16 +50,31 @@ module.exports = function (server, AuctionItem, Bid) {
 
   //To get all auctionItems summarized in a listview.
   server.get("/data/listViewAuctionItems", async (request, response) => {
+    let nowTime = new Date()
     let bids = await Bid.find()
     let auctionItems = await AuctionItem.find()
+      .where({ endTime: { $gt: nowTime }, startTime: { $lt: nowTime } })
+      .sort("endTime")
+      .limit(20)
       .select("itemPicture")
       .select("name")
       .select("endTime")
     let result = []
-    let currentBid, numberOfBids, bid, item
+    let currentBid, numberOfBids, bid, item, timeLeft, auctionTimeLeft
     let bidExists
     for (let i = 0; i < auctionItems.length; i++) {
       item = auctionItems[i]
+      timeLeft = item.endTime.getTime() - nowTime.getTime()
+      let days = Math.floor(timeLeft / (24 * 60 * 60 * 1000))
+      let hours = Math.floor(
+        (timeLeft - days * (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+      )
+      let minutes = Math.floor(
+        (timeLeft - (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
+          (60 * 1000)
+      )
+      auctionTimeLeft =
+        days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
       bidExists = false
       for (let j = 0; j < bids.length; j++) {
         bid = bids[j]
@@ -67,13 +82,13 @@ module.exports = function (server, AuctionItem, Bid) {
           bidExists = true
           currentBid = bid.buyers[bid.buyers.length - 1].bidAmount
           numberOfBids = bid.buyers.length
-          result.push({ item, currentBid, numberOfBids })
+          result.push({ item, currentBid, numberOfBids, auctionTimeLeft })
         }
       }
       if (!bidExists) {
         currentBid = 0
         numberOfBids = 0
-        result.push({ item, currentBid, numberOfBids })
+        result.push({ item, currentBid, numberOfBids, auctionTimeLeft })
       }
     }
     response.json(result)
@@ -83,9 +98,11 @@ module.exports = function (server, AuctionItem, Bid) {
   server.get(
     "/data/listViewAuctionItems/:categoryId",
     async (request, response) => {
+      let nowTime = new Date()
       let bids = await Bid.find()
       let auctionItems = await AuctionItem.where("category")
         .equals(request.params.categoryId)
+        .where({ endTime: { $gt: nowTime }, startTime: { $lt: nowTime } })
         .select("itemPicture")
         .select("name")
         .select("endTime")
