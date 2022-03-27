@@ -1,5 +1,7 @@
 // Bids
 
+const customer = require("./customer");
+
 module.exports = function (server, Bid, AuctionItem) {
   // Add new bid
   server.post("/data/bid", async (request, response) => {
@@ -80,8 +82,10 @@ module.exports = function (server, Bid, AuctionItem) {
   });
 
   // Get bids by customer
-  server.get("/data/bid-customer/:id", async (request, response) => {
-    let result = await Bid.find({ buyer: request.body.buyers.buyer });
+  server.get("/data/sellers/:sellerId", async (request, response) => {
+    let seller = await Bid.where("sellerId")
+      .equals(request.params.seller)
+    let result = await Bid.findById(request.params.seller)
     response.json(result);
   });
 
