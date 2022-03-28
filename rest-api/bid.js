@@ -5,6 +5,7 @@ const customer = require("./customer");
 module.exports = function (server, Bid, AuctionItem) {
   // Add new bid
   server.post("/data/bid", async (request, response) => {
+    // if (request.session.customer) {
     let buyer = request.body.buyers.buyer;
     let seller = request.body.seller;
     let newBid = request.body.buyers.bidAmount;
@@ -23,7 +24,9 @@ module.exports = function (server, Bid, AuctionItem) {
 
     if (auctionActiv && auctionEnded > nowTime) {
       if (itemIfExits != 0) {
-        let buyersList = await Bid.find({ auctionItem: item.auctionItem }).select("buyers");
+        let buyersList = await Bid.find({
+          auctionItem: item.auctionItem,
+        }).select("buyers");
         let bidList = buyersList[buyersList.length - 1].buyers;
         let currentBid = bidList[bidList.length - 1].bidAmount;
 
@@ -31,12 +34,24 @@ module.exports = function (server, Bid, AuctionItem) {
           if (newBid > startPrice && newBid > currentBid) {
             let item = await Bid.findOneAndUpdate(
               { auctionItem: request.body.auctionItem },
-              { $push: { buyers: newBuyer } });
+              { $push: { buyers: newBuyer } }
+            );
             let result = await item.save();
             return response.json(result);
-          } else if (newBid == currentBid || newBid < currentBid || newBid < startPrice || newBid == startPrice) {
-            return response.json("The currentBid: " + currentBid + " kr, " + "the starting pirce: "
-              + startPrice + " the bid must be higher than both of them.");
+          } else if (
+            newBid == currentBid ||
+            newBid < currentBid ||
+            newBid < startPrice ||
+            newBid == startPrice
+          ) {
+            return response.json(
+              "The currentBid: " +
+              currentBid +
+              " kr, " +
+              "the starting pirce: " +
+              startPrice +
+              " the bid must be higher than both of them."
+            );
           }
         } else {
           return response.json("The seller cannot place a bid");
@@ -50,25 +65,36 @@ module.exports = function (server, Bid, AuctionItem) {
         await response.json(result);
       }
     } else {
-      return response.json("This auction is not active!")
+      return response.json("This auction is not active!");
     }
+    // } else {
+    //   return response.json("Not logged in");
+    // }
   });
 
-  // Get all bids 
+  // Get all bids
   server.get("/data/bid", async (request, response) => {
+    // if (request.session.customer) {
     let result = await Bid.find();
     response.json(result);
+    // } else {
+    //   return response.json("Not logged in");
+    // }
   });
 
   // Get bids that are active with the auctionItems endTime, name, status (true) User story 4 (task 4.2)
-  server.get("/data/activeBids-withAuctionItemDetail", async (request, response) => {
-    let nowTime = new Date();
-    let auctionItemWithBids = await Bid.find().populate(
-      "auctionItem",
-      "name endTime status",
-      { endTime: { $gt: nowTime }, auctionItem: { $ne: null } });
-    response.json(auctionItemWithBids)
-  });
+  server.get(
+    "/data/activeBids-withAuctionItemDetail",
+    async (request, response) => {
+      let nowTime = new Date();
+      let auctionItemWithBids = await Bid.find().populate(
+        "auctionItem",
+        "name endTime status",
+        { endTime: { $gt: nowTime }, auctionItem: { $ne: null } }
+      );
+      response.json(auctionItemWithBids);
+    }
+  );
 
   // Get one bid
   server.get("/data/bid/:id", async (request, response) => {
@@ -84,10 +110,8 @@ module.exports = function (server, Bid, AuctionItem) {
 
   // Get bids by customer
   server.get("/data/sellers/:sellerId", async (request, response) => {
-    let seller = await Bid.where("sellerId")
-      .equals(request.params.seller)
-    let result = await Bid.findById(request.params.seller)
+    let seller = await Bid.where("sellerId").equals(request.params.seller);
+    let result = await Bid.findById(request.params.seller);
     response.json(result);
   });
-
 };
