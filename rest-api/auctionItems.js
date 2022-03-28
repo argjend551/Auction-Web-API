@@ -185,7 +185,7 @@ module.exports = function (server, AuctionItem, Bid) {
 
   //Update all entries status.
   server.put("/data/auctionItems", async (request, response) => {
-    // if (request.session.customer) {
+
     let result = await AuctionItem.find();
     let allBids = await Bid.find();
 
@@ -195,21 +195,26 @@ module.exports = function (server, AuctionItem, Bid) {
 
       index += 1
 
-
       const dateA = new Date(result[index].startTime);
       const dateB = new Date(result[index].endTime);
 
-      const dateC = new Date(); // - for todays date.
+      // For todays date. / since I failed to
+      // propertly create a debugDate in ISO format. 
+      const dateC = new Date();
 
-      // We use getTime() method to get the date as milliseconds since epoch
       let isDateCBetweenAandB = ((dateC.getTime() >= dateA.getTime() && dateC.getTime() <= dateB.getTime()))
 
       // When auction is done
 
       let bidWinner = null;
       let highestOffer = 0;
-      // When auction is done
 
+      // Not as safe as I want , I wanted to trigger state on off - but since we
+      // we can only put in bids when in status = true - there shouldent be any problem
+      // re evaluating the the bid winner. 
+      // 
+      // We should have a better name then status :/
+      // better name like isActionActive instead of status.
       if (!isDateCBetweenAandB) {
 
         if (allBids[index] != null) {
