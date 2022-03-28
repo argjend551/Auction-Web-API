@@ -16,8 +16,8 @@ module.exports = function (server, Bid, AuctionItem) {
     newBuyer.bidAmount = request.body.buyers.bidAmount;
 
     let auctionitem = await AuctionItem.findById(item.auctionItem);
-
     let startPrice = auctionitem.startingPrice;
+    console.log(startPrice)
     let auctionActiv = auctionitem.status;
     let auctionEnded = auctionitem.endTime;
     let nowTime = new Date();
@@ -46,20 +46,20 @@ module.exports = function (server, Bid, AuctionItem) {
           ) {
             return response.json(
               "The currentBid: " +
-                currentBid +
-                " kr, " +
-                "the starting pirce: " +
-                startPrice +
-                " the bid must be higher than both of them."
+              currentBid +
+              " kr, " +
+              "the starting pirce: " +
+              startPrice +
+              " the bid must be higher than both of them."
             );
           }
         } else {
           return response.json("The seller cannot place a bid");
         }
       } else if (newBid < startPrice || newBid == startPrice) {
-        return response.json(
-          "The bid must be higher than starting price: " + startPrice + "kr"
-        );
+        return response.json("The bid must be higher than starting price: " + startPrice + "kr")
+      } else if (buyer == seller) {
+        return response.json("The seller cannot place a bid");
       } else {
         let result = await item.save();
         await response.json(result);
