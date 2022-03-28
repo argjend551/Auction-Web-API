@@ -181,27 +181,25 @@ module.exports = function (server, AuctionItem, Bid) {
 
     let index = -1
 
-    result.forEach((element) => {
+    for (const element of result) {
+
       index += 1
-      const dateA = new Date(element.startTime)
-      const dateB = new Date(element.endTime)
+      const dateA = new Date(result[index].startTime);
+      const dateB = new Date(result[index].endTime);
 
-      // For debugging purposes this is currently changable like this
-      // but in live version it will be set by current time of date.
-      const checkDateRange = new Date("2022-03-20T11:00:00.000Z")
 
-      const isDateCBetweenAandB =
-        dateA.getTime() <= checkDateRange.getTime() &&
-        checkDateRange.getTime() <= dateB.getTime()
+      const dateC = new Date(); // - for todays date.
 
-      let newAuctionState = element.status;
-      // Update the state
-      element.status = isDateCBetweenAandB
+      // We use getTime() method to get the date as milliseconds since epoch
+      let isDateCBetweenAandB = ((dateC.getTime() >= dateA.getTime() && dateC.getTime() <= dateB.getTime()))
 
-      // current winner of auction
+      // When auction is done
       let bidWinner = null;
-      // When auction is done 
-      if (true) {
+      let highestOffer = 0;
+
+      // If bidwinner is null we check if were outside. 
+      // I reduced it , probably enough. 
+      if (result[index].bidWinner == null && isDateCBetweenAandB == false) {
 
         if (allBids[index] != null) {
 
@@ -211,24 +209,35 @@ module.exports = function (server, AuctionItem, Bid) {
 
             let highestBid = 0;
 
-            bidOnAuction.forEach(bidOffer => {
+            for (const bidOffer of bidOnAuction) {
 
               let bidAmount = bidOffer.bidAmount;
 
               // find highest bid.
-              if (bidAmount > highestBid && bidAmount > element.reservationPrice) {
+              if (bidAmount > highestOffer && bidAmount > element.reservationPrice) {
                 bidWinner = bidOffer;
-                highestBid = bidWinner.bidAmount;
-
-                element.bidWinner = bidOffer;
-                element.bidWinAmmount = highestBid;
+                highestOffer = bidAmount;
               }
-            });
+            }
           }
         }
       }
-    })
 
-    response.json(result)
+      // Finalize save object
+      // Write to object. / skall vara ID inte name. 
+      // It just dont work correctly when I've tried other things :/
+      const filter = { name: result[index].name };
+      const update = {
+        status: isDateCBetweenAandB,
+        bidWinner: bidWinner,
+        bidWinOffer: highestOffer
+      };
+
+      let doc = await AuctionItem.findOneAndUpdate(filter, update, {
+        new: true
+      });
+    }
+
+    response.end();
   })
 }

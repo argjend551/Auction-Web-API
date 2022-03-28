@@ -21,6 +21,8 @@ server.listen(3000, () => {
 // Use mongoose
 const mongoose = require("mongoose")
 
+
+
 // Customer model
 const Customer = mongoose.model(
   "Customer",
@@ -65,7 +67,7 @@ const AuctionItem = mongoose.model(
     description: { type: String, required: true },
     status: Boolean,
     bidWinner: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
-    bidWinAmmount: Number
+    bidWinOffer: Number
   })
 )
 
