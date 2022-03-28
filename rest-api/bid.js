@@ -105,7 +105,6 @@ module.exports = function (server, Bid, AuctionItem) {
       let d = new Date();
       let nowTime = ISODateString(d);
 
-      console.log(nowTime)
       let auctionItemWithBids = await Bid.find().populate({
         path: "auctionItem",
         match: {
