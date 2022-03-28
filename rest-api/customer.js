@@ -13,6 +13,16 @@ module.exports = function (server, Customer) {
     response.json(result);
   });
 
+  // GET customers profile
+  server.get("/data/customer/profile/:id", async (request, response) => {
+    let result = await Customer.findById(request.params.id)
+      .select("firstname")
+      .select("pictureURL")
+      .select("publicEmail");
+
+    response.json(result);
+  });
+
   // GET customer by id
   server.get("/data/customer/:id", async (request, response) => {
     let result = await Customer.findById(request.params.id);
