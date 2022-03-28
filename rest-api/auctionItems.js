@@ -1,3 +1,5 @@
+const bid = require("./bid")
+
 module.exports = function (server, AuctionItem, Bid) {
   //to add an auctionItem
   server.post("/data/auctionItems", async (request, response) => {
@@ -27,7 +29,7 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("buyers")
       let bidList, currentBid, numberOfBids
       if (bid[0] === undefined) {
-        ;(currentBid = 0), (numberOfBids = 0)
+        ; (currentBid = 0), (numberOfBids = 0)
       } else {
         bidList = bid[bid.length - 1].buyers
         currentBid = bidList[bidList.length - 1].bidAmount
@@ -71,7 +73,7 @@ module.exports = function (server, AuctionItem, Bid) {
       )
       let minutes = Math.floor(
         (timeLeft - (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
-          (60 * 1000)
+        (60 * 1000)
       )
       auctionTimeLeft =
         days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
@@ -174,7 +176,8 @@ module.exports = function (server, AuctionItem, Bid) {
 
   //Update all entries status.
   server.put("/data/auctionItems", async (request, response) => {
-    let result = await AuctionItem.find()
+    let result = await AuctionItem.find();
+    let allBids = await Bid.find();
 
     let index = -1
 
@@ -191,8 +194,39 @@ module.exports = function (server, AuctionItem, Bid) {
         dateA.getTime() <= checkDateRange.getTime() &&
         checkDateRange.getTime() <= dateB.getTime()
 
+      let newAuctionState = element.status;
       // Update the state
       element.status = isDateCBetweenAandB
+
+      // current winner of auction
+      let bidWinner = null;
+      // When auction is done 
+      if (true) {
+
+        if (allBids[index] != null) {
+
+          let bidOnAuction = allBids[index].buyers;
+
+          if (bidOnAuction != null) {
+
+            let highestBid = 0;
+
+            bidOnAuction.forEach(bidOffer => {
+
+              let bidAmount = bidOffer.bidAmount;
+
+              // find highest bid.
+              if (bidAmount > highestBid && bidAmount > element.reservationPrice) {
+                bidWinner = bidOffer;
+                highestBid = bidWinner.bidAmount;
+
+                element.bidWinner = bidOffer;
+                element.bidWinAmmount = highestBid;
+              }
+            });
+          }
+        }
+      }
     })
 
     response.json(result)

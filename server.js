@@ -63,7 +63,9 @@ const AuctionItem = mongoose.model(
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     itemPicture: [{ type: String, required: true }],
     description: { type: String, required: true },
-    status: Boolean
+    status: Boolean,
+    bidWinner: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+    bidWinAmmount: Number
   })
 )
 
