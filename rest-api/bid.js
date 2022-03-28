@@ -17,7 +17,6 @@ module.exports = function (server, Bid, AuctionItem) {
 
     let auctionitem = await AuctionItem.findById(item.auctionItem);
     let startPrice = auctionitem.startingPrice;
-    console.log(startPrice)
     let auctionActiv = auctionitem.status;
     let auctionEnded = auctionitem.endTime;
     let nowTime = new Date();
@@ -45,12 +44,9 @@ module.exports = function (server, Bid, AuctionItem) {
             newBid == startPrice
           ) {
             return response.json(
-              "The currentBid: " +
+              "The current bid is " +
               currentBid +
-              " kr, " +
-              "the starting pirce: " +
-              startPrice +
-              " the bid must be higher than both of them."
+              " kr, your bid must be higher than " + currentBid + " kr."
             );
           }
         } else {
