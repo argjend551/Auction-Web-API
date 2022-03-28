@@ -194,9 +194,10 @@ module.exports = function (server, AuctionItem, Bid) {
     for (const element of result) {
 
       index += 1
+
+
       const dateA = new Date(result[index].startTime);
       const dateB = new Date(result[index].endTime);
-
 
       const dateC = new Date(); // - for todays date.
 
@@ -204,23 +205,27 @@ module.exports = function (server, AuctionItem, Bid) {
       let isDateCBetweenAandB = ((dateC.getTime() >= dateA.getTime() && dateC.getTime() <= dateB.getTime()))
 
       // When auction is done
+
       let bidWinner = null;
+      let highestOffer = 0;
       // When auction is done
-      if (true) {
+
+      if (!isDateCBetweenAandB) {
+
         if (allBids[index] != null) {
           let bidOnAuction = allBids[index].buyers;
 
           if (bidOnAuction != null) {
-            let highestBid = 0;
+            let heighestBidValue = 0;
 
             for (const bidOffer of bidOnAuction) {
 
               let bidAmount = bidOffer.bidAmount;
 
               // find highest bid.
-              if (bidAmount > highestOffer && bidAmount > element.reservationPrice) {
+              if (bidAmount > heighestBidValue && bidAmount > element.startingPrice && bidAmount > element.reservationPrice) {
                 bidWinner = bidOffer;
-                highestOffer = bidAmount;
+                highestOffer = heighestBidValue = bidAmount;
               }
             }
           }
