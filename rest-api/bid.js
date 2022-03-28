@@ -15,14 +15,13 @@ module.exports = function (server, Bid, AuctionItem) {
     newBuyer.bidAmount = request.body.buyers.bidAmount;
 
     let auctionitem = await AuctionItem.findById(item.auctionItem);
-
     let startPrice = auctionitem.startingPrice;
+    console.log(startPrice)
     let auctionActiv = auctionitem.status;
     let auctionEnded = auctionitem.endTime;
     let nowTime = new Date();
 
     if (auctionActiv && auctionEnded > nowTime) {
-
       if (itemIfExits != 0) {
         let buyersList = await Bid.find({ auctionItem: item.auctionItem }).select("buyers");
         let bidList = buyersList[buyersList.length - 1].buyers;
@@ -44,6 +43,8 @@ module.exports = function (server, Bid, AuctionItem) {
         }
       } else if (newBid < startPrice || newBid == startPrice) {
         return response.json("The bid must be higher than starting price: " + startPrice + "kr")
+      } else if (buyer == seller) {
+        return response.json("The seller cannot place a bid");
       } else {
         let result = await item.save();
         await response.json(result);
