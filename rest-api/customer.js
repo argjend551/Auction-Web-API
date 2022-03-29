@@ -22,41 +22,39 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
       .select("review");
 
     let now = new Date();
-    let allSellingAuction = await Bid.find({
-      seller: request.params.id
-    })
-      .populate({
-        path: "auctionItem", select: "name endTime status reservationPrice",
-        match: { status: { $ne: true } }
+    let soldAuction = await Bid.aggregate([
+      {
+        $lookup: {
+          from: "auctionitems",
+          localField: "seller",
+          foreignField: "seller",
+          as: "Auction-Items"
+        }
+      }])
+      .match({
+        $and: [{ "Auction-Items.status": { $eq: false } },
+        { "Auction-Items.endTime": { $gt: now } },
+        {
+          "Auction-Items.reservationPrice":
+            { $gt: "Auction-Items.buyers[Auction-Items.buyers.length -1].bidAmount" }
+        }]
       })
-    let soldAuction = [];
-    for (let auction of allSellingAuction) {
-      if (auction.auctionItem !== null) {
-        auction.buyers = auction.buyers[auction.buyers.length - 1];
-        if (auction.buyers[auction.buyers.length - 1].bidAmount > auction.auctionItem.reservationPrice) {
-          soldAuction.push(auction)
-        }
-      }
-    }
 
-    let allBuyingAuction = await Bid.find({ select: "buyers auctionItem" })
-      .populate({
-        path: "auctionItem", select: "status endTime name reservationPrice", match: {
-          status: { $eq: false }, endTime: { $lt: now }
+    let boughtAuction = await Bid.aggregate([
+      {
+        $lookup: {
+          from: "auctionitems",
+          localField: "auctionItem",
+          foreignField: "_id",
+          as: "Auction-Items"
         }
+      }])
+      .match({
+        $and: [{ "Auction-Items.status": { $eq: false } },
+        { "Auction-Items.endTime": { $lt: now } }, {
+          "Auction-Items.bidWinner": { $eq: request.params.id }
+        }]
       })
-    let boughtAuction = [];
-    for (let auction of allBuyingAuction) {
-      if (auction.auctionItem !== null) {
-        if (auction.buyers[auction.buyers.length - 1].buyer == request.params.id) {
-          auction.buyers = auction.buyers[auction.buyers.length - 1];
-          if (auction.buyers[auction.buyers.length - 1].bidAmount > auction.auctionItem.reservationPrice) {
-            boughtAuction.push(auction)
-          }
-        }
-      }
-    }
-
     response.json({ "My profile": result, "Sold Auctions": soldAuction, "Bought Auctions": boughtAuction });
   });
 

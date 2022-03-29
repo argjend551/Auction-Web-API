@@ -91,21 +91,24 @@ module.exports = function (server, Bid, AuctionItem) {
   server.get(
     "/data/activeBids-withAuctionItemDetail",
     async (request, response) => {
-      let nowTime = new Date();
-      let auctionItemWithBids = await Bid.find().populate({
-        path: "auctionItem",
-        match: {
-          status: { $ne: false }, endTime: { $gt: nowTime }
+      let now = new Date();
+      let activItemWithBids = await Bid.aggregate([
+        {
+          $lookup: {
+            from: "auctionitems",
+            localField: "auctionItem",
+            foreignField: "_id",
+            as: "Auction-Items"
+          }
         },
-        select: "name endTime status"
-      });
-      let activeBids = [];
-      for (let bid of auctionItemWithBids) {
-        if (bid.auctionItem !== null) {
-          activeBids.push(bid)
-        }
-      }
-      response.json(activeBids);
+        {
+          $match:
+          {
+            $and: [{ "Auction-Items.status": { $eq: true } },
+            { "Auction-Items.endTime": { $gt: now } }]
+          }
+        }])
+      response.json(activItemWithBids);
     }
   );
 
