@@ -18,10 +18,13 @@ module.exports = function (server, Customer) {
     let result = await Customer.findById(request.params.id)
       .select("firstname")
       .select("pictureURL")
-      .select("publicEmail");
+      .select("publicEmail")
+      .select("review");
 
     response.json(result);
   });
+
+  
 
   // GET customer by id
   server.get("/data/customer/:id", async (request, response) => {
