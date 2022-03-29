@@ -128,4 +128,15 @@ module.exports = function (server, Bid, AuctionItem) {
     let seller = await AuctionItem.find().where({ seller: request.params.sellerId });
     response.json(seller);
   });
+
+  // Get bids made by a user. 
+  server.get("/data/buyer/:buyerId", async (request, response) => {
+    let buyer = await Bid.find().where({ "buyers.buyer": request.params.buyerId }).select("auctionItem").populate({
+      path: "auctionItem",
+      select: "name"
+    });
+    response.json(buyer);
+
+  });
+
 };
