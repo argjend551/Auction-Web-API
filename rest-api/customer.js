@@ -26,20 +26,22 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
       seller: request.params.id
     })
       .populate({
-        path: "auctionItem", select: "name endTime status",
+        path: "auctionItem", select: "name endTime status reservationPrice",
         match: { status: { $ne: true } }
       })
     let soldAuction = [];
     for (let auction of allSellingAuction) {
       if (auction.auctionItem !== null) {
-        auction.buyers = auction.buyers[auction.buyers.length - 1]
-        soldAuction.push(auction)
+        auction.buyers = auction.buyers[auction.buyers.length - 1];
+        if (auction.buyers[auction.buyers.length - 1].bidAmount > auction.auctionItem.reservationPrice) {
+          soldAuction.push(auction)
+        }
       }
     }
 
     let allBuyingAuction = await Bid.find({ select: "buyers auctionItem" })
       .populate({
-        path: "auctionItem", select: "status endTime name", match: {
+        path: "auctionItem", select: "status endTime name reservationPrice", match: {
           status: { $eq: false }, endTime: { $lt: now }
         }
       })
@@ -47,8 +49,10 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
     for (let auction of allBuyingAuction) {
       if (auction.auctionItem !== null) {
         if (auction.buyers[auction.buyers.length - 1].buyer == request.params.id) {
-          auction.buyers = auction.buyers[auction.buyers.length - 1]
-          boughtAuction.push(auction)
+          auction.buyers = auction.buyers[auction.buyers.length - 1];
+          if (auction.buyers[auction.buyers.length - 1].bidAmount > auction.auctionItem.reservationPrice) {
+            boughtAuction.push(auction)
+          }
         }
       }
     }
