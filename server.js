@@ -85,8 +85,7 @@ const Bid = mongoose.model(
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer"
-    },
-    status: Boolean
+    }
   })
 )
 
@@ -108,7 +107,7 @@ async function start() {
     (e) => console.error(e)
   )
   // add REST api
-  RestCustomer(server, Customer)
+  RestCustomer(server, Customer, AuctionItem, Bid)
   RestAuthentication(server, Customer)
   RestAuctionItems(server, AuctionItem, Bid)
   RestCategory(server, Category)

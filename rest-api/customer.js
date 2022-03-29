@@ -1,6 +1,6 @@
 // Registration
 
-module.exports = function (server, Customer) {
+module.exports = function (server, Customer, AuctionItem, Bid) {
   server.post("/data/customer", async (request, response) => {
     let item = await new Customer(request.body);
     let result = await item.save();
@@ -19,8 +19,40 @@ module.exports = function (server, Customer) {
       .select("firstname")
       .select("pictureURL")
       .select("publicEmail");
+    let now = new Date();
 
-    response.json(result);
+    let allSellingAuction = await Bid.find({
+      seller: request.params.id
+    })
+      .populate({
+        path: "auctionItem", select: "name endTime status",
+        match: { status: { $ne: true } }
+      })
+    let soldAuction = [];
+    for (let auction of allSellingAuction) {
+      if (auction.auctionItem !== null) {
+        auction.buyers = auction.buyers[auction.buyers.length - 1]
+        soldAuction.push(auction)
+      }
+    }
+
+    let allBuyingAuction = await Bid.find({ select: "buyers auctionItem" })
+      .populate({
+        path: "auctionItem", select: "status endTime name", match: {
+          status: { $eq: false }, endTime: { $lt: now }
+        }
+      })
+    let boughtAuction = [];
+    for (let auction of allBuyingAuction) {
+      if (auction.auctionItem !== null) {
+        if (auction.buyers[auction.buyers.length - 1].buyer == request.params.id) {
+          auction.buyers = auction.buyers[auction.buyers.length - 1]
+          boughtAuction.push(auction)
+        }
+      }
+    }
+
+    response.json({ "My profile": result, "Sold Auctions": soldAuction, "Bought Auctions": boughtAuction });
   });
 
   // GET customer by id
