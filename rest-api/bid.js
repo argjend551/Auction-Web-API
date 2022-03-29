@@ -93,15 +93,17 @@ module.exports = function (server, Bid, AuctionItem) {
     async (request, response) => {
 
       function ISODateString(d) {
-        function pad(n) { return n < 10 ? '0' + n : n }
+        function pad(n) {
+          return n < 10 ? '0' + n : n
+        }
         return d.getFullYear() + '-'
           + pad(d.getMonth() + 1) + '-'
           + pad(d.getDate()) + 'T'
           + pad(d.getHours()) + ':'
           + pad(d.getMinutes()) + ':'
-          + pad(d.getSeconds()) + 'Z'
+          + pad(d.getSeconds()) + '.'
+          + pad(d.getMilliseconds()) + 'Z'
       }
-
       let d = new Date();
       let nowTime = ISODateString(d);
 
