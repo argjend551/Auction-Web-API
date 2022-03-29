@@ -228,7 +228,7 @@ module.exports = function (server, AuctionItem, Bid) {
   //Update all entries status.
   server.put("/data/auctionItems", async (request, response) => {
     let result = await AuctionItem.find()
-    let allBids = await Bid.find()
+    // let allBids = await Bid.find();
 
     let index = -1
 
@@ -257,24 +257,39 @@ module.exports = function (server, AuctionItem, Bid) {
       // We should have a better name then status :/
       // better name like isActionActive instead of status.
       if (!isDateCBetweenAandB) {
-        if (allBids[index] != null) {
-          let bidOnAuction = allBids[index].buyers
+        let id = result[index]._id
 
-          if (bidOnAuction != null) {
-            let heighestBidValue = 0
+        // Search bids for auctionItem field for matching object to
+        // current object id.
+        const bidsOnAuction = await Bid.find().where({ auctionItem: element })
 
-            for (const bidOffer of bidOnAuction) {
-              let bidAmount = bidOffer.bidAmount
+        //Log respond early - comes back null :(
+        //highestOffer = "404";
 
-              // find highest bid.
-              if (
-                bidAmount > heighestBidValue &&
-                bidAmount > element.startingPrice &&
-                bidAmount > element.reservationPrice
-              ) {
-                bidWinner = bidOffer
-                highestOffer = heighestBidValue = bidAmount
-              }
+        // We will always get an array; if auction has a bid is another story.
+        if (bidsOnAuction.length > 0) {
+          //          highestOffer = "123";
+
+          // might have to bidsOnAuction[0] // if lenght more then 1
+          // we have id duplication , should not happen.
+          let bidderArray = bidsOnAuction[0].buyers
+
+          if (bidderArray != null) {
+            if (bidderArray.length > 0) {
+              let highestBid = 0
+
+              bidderArray.forEach((bidOffer) => {
+                const bidAmount = bidOffer.bidAmount
+
+                if (
+                  bidAmount > highestBid &&
+                  bidAmount > element.startingPrice &&
+                  bidAmount > element.reservationPrice
+                ) {
+                  highestBid = highestOffer = bidAmount
+                  bidWinner = bidOffer // buyer - in buyers within Bid
+                }
+              })
             }
           }
         }
@@ -295,6 +310,6 @@ module.exports = function (server, AuctionItem, Bid) {
       })
     }
 
-    response.end()
+    response.json("Updated auction listings.")
   })
 }

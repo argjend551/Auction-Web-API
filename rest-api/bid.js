@@ -92,20 +92,7 @@ module.exports = function (server, Bid, AuctionItem) {
     "/data/activeBids-withAuctionItemDetail",
     async (request, response) => {
 
-      function ISODateString(d) {
-        function pad(n) {
-          return n < 10 ? '0' + n : n
-        }
-        return d.getFullYear() + '-'
-          + pad(d.getMonth() + 1) + '-'
-          + pad(d.getDate()) + 'T'
-          + pad(d.getHours()) + ':'
-          + pad(d.getMinutes()) + ':'
-          + pad(d.getSeconds()) + '.'
-          + pad(d.getMilliseconds()) + 'Z'
-      }
-      let d = new Date();
-      let nowTime = ISODateString(d);
+      let nowTime = new Date();
 
       let auctionItemWithBids = await Bid.find().populate({
         path: "auctionItem",
@@ -136,10 +123,20 @@ module.exports = function (server, Bid, AuctionItem) {
     response.json("One bid is removed");
   });
 
-  // Get bids by customer
+  // Get AuctionItems from the same seller
   server.get("/data/sellers/:sellerId", async (request, response) => {
-    let seller = await Bid.where("sellerId").equals(request.params.seller);
-    let result = await Bid.findById(request.params.seller);
-    response.json(result);
+    let seller = await AuctionItem.find().where({ seller: request.params.sellerId });
+    response.json(seller);
   });
+
+  // Get bids made by a user. 
+  server.get("/data/buyer/:buyerId", async (request, response) => {
+    let buyer = await Bid.find().where({ "buyers.buyer": request.params.buyerId }).select("auctionItem").populate({
+      path: "auctionItem",
+      select: "name"
+    });
+    response.json(buyer);
+
+  });
+
 };
