@@ -106,8 +106,7 @@ module.exports = function (server, Bid, AuctionItem) {
 
   // Get items with same customer
   server.get("/data/sellers/:sellerId", async (request, response) => {
-    let seller = await AuctionItem.where("sellerId").equals(request.params.seller);
-    let result = await AuctionItem.findById(seller);
-    response.json([result]);
+    let seller = await AuctionItem.find().where({ seller: request.params.sellerId });
+    response.json(seller);
   });
 };
