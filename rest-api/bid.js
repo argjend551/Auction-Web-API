@@ -104,10 +104,10 @@ module.exports = function (server, Bid, AuctionItem) {
     response.json("One bid is removed");
   });
 
-  // Get bids by customer
+  // Get items with same customer
   server.get("/data/sellers/:sellerId", async (request, response) => {
-    let seller = await Bid.where("sellerId").equals(request.params.seller);
-    let result = await Bid.findById(request.params.seller);
-    response.json(result);
+    let seller = await AuctionItem.where("sellerId").equals(request.params.seller);
+    let result = await AuctionItem.findById(seller);
+    response.json([result]);
   });
 };
