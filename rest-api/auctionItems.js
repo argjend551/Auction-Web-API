@@ -248,7 +248,7 @@ module.exports = function (server, AuctionItem, Bid) {
 
                 if (bidAmount > highestBid && bidAmount > element.startingPrice && bidAmount > element.reservationPrice) {
                   highestBid = highestOffer = bidAmount
-                  bidWinner = bidOffer; // buyer - in buyers within Bid
+                  bidWinner = bidOffer.buyer; // buyer - in buyers within Bid
                 }
               });
             }
