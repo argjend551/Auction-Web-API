@@ -78,17 +78,36 @@ module.exports = function (server, Bid, AuctionItem) {
     // }
   });
 
+  // Get all bids with auctionItems (both status: false and status: true)
+  server.get("/data/allbids-withAuctionItemDetail", async (request, response) => {
+    let result = await Bid.find().populate({
+      path: "auctionItem",
+      select: "name endTime status"
+    });
+    response.json(result);
+  });
+
   // Get bids that are active with the auctionItems endTime, name, status (true) User story 4 (task 4.2)
   server.get(
     "/data/activeBids-withAuctionItemDetail",
     async (request, response) => {
+
       let nowTime = new Date();
-      let auctionItemWithBids = await Bid.find().populate(
-        "auctionItem",
-        "name endTime status",
-        { endTime: { $gt: nowTime }, auctionItem: { $ne: null } }
-      );
-      response.json(auctionItemWithBids);
+
+      let auctionItemWithBids = await Bid.find().populate({
+        path: "auctionItem",
+        match: {
+          status: { $ne: false }, endTime: { $gt: nowTime }
+        },
+        select: "name endTime status"
+      });
+      let activeBids = [];
+      for (let bid of auctionItemWithBids) {
+        if (bid.auctionItem !== null) {
+          activeBids.push(bid)
+        }
+      }
+      response.json(activeBids);
     }
   );
 
@@ -104,10 +123,9 @@ module.exports = function (server, Bid, AuctionItem) {
     response.json("One bid is removed");
   });
 
-  // Get bids by customer
+  // Get AuctionItems from the same seller
   server.get("/data/sellers/:sellerId", async (request, response) => {
-    let seller = await Bid.where("sellerId").equals(request.params.seller);
-    let result = await Bid.findById(request.params.seller);
-    response.json(result);
+    let seller = await AuctionItem.find().where({ seller: request.params.sellerId });
+    response.json(seller);
   });
 };
