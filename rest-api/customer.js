@@ -18,9 +18,10 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
     let result = await Customer.findById(request.params.id)
       .select("firstname")
       .select("pictureURL")
-      .select("publicEmail");
-    let now = new Date();
+      .select("publicEmail")
+      .select("review");
 
+    let now = new Date();
     let allSellingAuction = await Bid.find({
       seller: request.params.id
     })
@@ -54,6 +55,8 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
 
     response.json({ "My profile": result, "Sold Auctions": soldAuction, "Bought Auctions": boughtAuction });
   });
+
+
 
   // GET customer by id
   server.get("/data/customer/:id", async (request, response) => {
