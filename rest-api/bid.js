@@ -92,20 +92,7 @@ module.exports = function (server, Bid, AuctionItem) {
     "/data/activeBids-withAuctionItemDetail",
     async (request, response) => {
 
-      function ISODateString(d) {
-        function pad(n) {
-          return n < 10 ? '0' + n : n
-        }
-        return d.getFullYear() + '-'
-          + pad(d.getMonth() + 1) + '-'
-          + pad(d.getDate()) + 'T'
-          + pad(d.getHours()) + ':'
-          + pad(d.getMinutes()) + ':'
-          + pad(d.getSeconds()) + '.'
-          + pad(d.getMilliseconds()) + 'Z'
-      }
-      let d = new Date();
-      let nowTime = ISODateString(d);
+      let nowTime = new Date();
 
       let auctionItemWithBids = await Bid.find().populate({
         path: "auctionItem",
