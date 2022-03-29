@@ -21,44 +21,13 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
       .select("publicEmail")
       .select("review");
 
-    let now = new Date();
-    let soldAuction = await Bid.aggregate([
-      {
-        $lookup: {
-          from: "auctionitems",
-          localField: "seller",
-          foreignField: "seller",
-          as: "Auction-Items"
-        }
-      }])
-      .match({
-        $and: [{ "Auction-Items.status": { $eq: false } },
-        { "Auction-Items.endTime": { $gt: now } },
-        {
-          "Auction-Items.reservationPrice":
-            { $gt: "Auction-Items.buyers[Auction-Items.buyers.length -1].bidAmount" }
-        }]
-      })
+    let soldAuction = await AuctionItem.find({ seller: request.params.id })
+      .where("bidWinner").ne(null)
 
-    let boughtAuction = await Bid.aggregate([
-      {
-        $lookup: {
-          from: "auctionitems",
-          localField: "auctionItem",
-          foreignField: "_id",
-          as: "Auction-Items"
-        }
-      }])
-      .match({
-        $and: [{ "Auction-Items.status": { $eq: false } },
-        { "Auction-Items.endTime": { $lt: now } }, {
-          "Auction-Items.bidWinner": { $eq: request.params.id }
-        }]
-      })
+    let boughtAuction = await AuctionItem.find({ bidWinner: request.params.id })
+
     response.json({ "My profile": result, "Sold Auctions": soldAuction, "Bought Auctions": boughtAuction });
   });
-
-
 
   // GET customer by id
   server.get("/data/customer/:id", async (request, response) => {
