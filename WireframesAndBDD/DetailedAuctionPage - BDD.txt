@@ -1,0 +1,17 @@
+SCENARIO - Reading details and putting in a bid
+
+GIVEN User entered an amount into field
+WHEN User press confirmbutton
+THEN Amount entered is checked
+AND the bid amount is entered into database
+AND the new current price is updated on the auction
+
+
+NEGATIVE SCENARIO - The amount entered is too low
+
+GIVEN User entered an amount into field
+WHEN User press confirmbutton
+THEN Amount entered is checked
+BUT the amount is too low
+AND The system sends message that the amount is too low
+AND Promtps user to raise the amount of the bid.

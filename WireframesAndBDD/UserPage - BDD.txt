@@ -1,0 +1,14 @@
+SCENARIO - The user wants to see how many sales they made
+GIVEN The user is logged in
+WHEN Customer Press sales
+THEN System renders a list of items sold by user
+
+SCENARIO - The user wants to see how many purchases they made
+GIVEN The user is logged in
+WHEN Customer Press Purchases
+THEN System renders a list of items purchase by user
+
+NEGATIVE SCENARIO - The user has no sales/purchases
+GIVEN The user is logged in
+WHEN Customer Press Purchases/sales
+THEN Renders a message that no sales / purchases has been made

@@ -1,0 +1,21 @@
+SCENARIO - The user logs in
+GIVEN The customer has an active account
+WHEN The customer enters the Email & password
+AND Press the login button
+THEN The system authenticate the user
+AND Logs in the user
+
+NEGATIVE SCENARIO - The user enters wrong password
+GIVEN The customer has an active account
+WHEN The customer enters the Email & password
+AND Press the login button
+THEN The system authenticate the user
+BUT The password is incorrect for the user
+AND The system prompts the user to use reset password function
+
+NEGATIVE SCENARIO - The user doesn't have an account
+WHEN The customers enters email & password
+AND Press the login button
+THEN The system authenticate the user
+AND The account doesn't exist
+AND the system prompts the user to create a new account

@@ -1,0 +1,18 @@
+SCENARIO - Customer changes the category
+WHEN The customer presses a category
+THEN Search the database for all auction objects with matching category
+AND Render them in the DIV to the right
+
+SCENARIO - Customer uses the search function
+WHEN Customer enter what to search for in textfield
+AND Press Enter
+THEN Search the database for all auction objects that matches the search
+AND Renders the result in a list to the right DIV
+
+NEGATIVE SCENARIO - Customer uses the search function but no matches
+
+WHEN Customer enter what to search for in textfield
+AND Press Enter
+THEN Search the database for all auction objects that matches the search
+BUT No matches are found
+AND The message "No matches found" is printed

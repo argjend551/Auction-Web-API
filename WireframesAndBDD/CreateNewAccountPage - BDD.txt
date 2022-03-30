@@ -1,0 +1,17 @@
+WHEN The User filled the required fields
+AND press Create Account Button
+THEN the system checks if the Emailaddress already exists 
+AND The Information is added to the database
+AND The customer is logged into the created account
+
+WHEN The customer filled the required fields
+AND Press Create Account Button
+THEN the system checks if the Emailaddress already exists
+AND An account with that Email already exists
+AND The system sends a message that the email already is in use
+BUT it adds a link to a recover password site
+
+WHEN Fills fields but not the required fields
+AND Press Create Account Button
+THEN System checks the textfields
+AND Prompts the user to fill the required fields

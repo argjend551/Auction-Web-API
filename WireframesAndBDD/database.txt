@@ -1,0 +1,35 @@
+
+1. Kategorier
+id
+namn
+
+2. AuktionsObjekt
+id
+Namn
+kategoriId
+Säljare
+Startdatum
+Slutdatum
+Pris
+ReservationsPris
+Detaljer
+Status
+bildURL
+
+3. Customer
+CustomerID
+firstName
+lastName
+Email (unique)
+Password
+PictureURL
+Cellphone
+address
+Area
+publicEmail
+
+4. Bids
+BidID
+AuctionID
+BuyerID
+BidAmount

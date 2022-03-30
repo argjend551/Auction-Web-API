@@ -1,0 +1,13 @@
+GIVEN The user is logged in
+WHEN The fields has been filled
+AND At least 1 picture has been added
+AND User pressed Confirm Auction button
+THEN The API POST the Auction to the database
+
+GIVEN The user is logged in
+WHEN User press Confirm Auction button
+THEN Gets message that they need to fill the fields 
+AND Add at least 1 picture
+
+
+
