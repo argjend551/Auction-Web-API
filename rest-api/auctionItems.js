@@ -1,6 +1,20 @@
 const bid = require("./bid")
 
 module.exports = function (server, AuctionItem, Bid) {
+  function showTimeLeft(timeLeft) {
+    let days = Math.floor(timeLeft / (24 * 60 * 60 * 1000))
+    let hours = Math.floor(
+      (timeLeft - days * (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+    )
+    let minutes = Math.floor(
+      (timeLeft - (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
+        (60 * 1000)
+    )
+    auctionTimeLeft =
+      days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
+    return auctionTimeLeft
+  }
+
   //to add an auctionItem
   server.post("/data/auctionItems", async (request, response) => {
     // if (request.session.customer) {
@@ -62,25 +76,19 @@ module.exports = function (server, AuctionItem, Bid) {
       .where({ endTime: { $gt: nowTime }, startTime: { $lt: nowTime } })
       .sort("endTime")
       .limit(20)
-      .select("itemPicture")
-      .select("name")
-      .select("endTime")
+      .select(["itemPicture", "name", "endTime"])
     let result = []
-    let currentBid, numberOfBids, bid, item, timeLeft, auctionTimeLeft
-    let bidExists
+    let currentBid,
+      numberOfBids,
+      bid,
+      item,
+      timeLeft,
+      auctionTimeLeft,
+      bidExists
     for (let i = 0; i < auctionItems.length; i++) {
       item = auctionItems[i]
       timeLeft = item.endTime.getTime() - nowTime.getTime()
-      let days = Math.floor(timeLeft / (24 * 60 * 60 * 1000))
-      let hours = Math.floor(
-        (timeLeft - days * (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
-      )
-      let minutes = Math.floor(
-        (timeLeft - (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
-          (60 * 1000)
-      )
-      auctionTimeLeft =
-        days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
+      auctionTimeLeft = showTimeLeft(timeLeft)
       bidExists = false
       for (let j = 0; j < bids.length; j++) {
         bid = bids[j]
@@ -109,9 +117,7 @@ module.exports = function (server, AuctionItem, Bid) {
       let auctionItems = await AuctionItem.where("category")
         .equals(request.params.categoryId)
         .where({ endTime: { $gt: nowTime }, startTime: { $lt: nowTime } })
-        .select("itemPicture")
-        .select("name")
-        .select("endTime")
+        .select(["itemPicture", "name", "endTime"])
       let result = []
       let currentBid, numberOfBids, bid, item
       let bidExists
@@ -204,17 +210,7 @@ module.exports = function (server, AuctionItem, Bid) {
       for (let i = 0; i < auctions.length; i++) {
         item = auctions[i]
         timeLeft = item.endTime.getTime() - nowTime.getTime()
-        let days = Math.floor(timeLeft / (24 * 60 * 60 * 1000))
-        let hours = Math.floor(
-          (timeLeft - days * (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
-        )
-        let minutes = Math.floor(
-          (timeLeft -
-            (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
-            (60 * 1000)
-        )
-        auctionTimeLeft =
-          days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
+        auctionTimeLeft = showTimeLeft(timeLeft)
         bidExists = false
         for (let j = 0; j < bids.length; j++) {
           bid = bids[j]
@@ -235,10 +231,7 @@ module.exports = function (server, AuctionItem, Bid) {
       auctions = await AuctionItem.find({
         status: false,
         startTime: { $lt: nowTime }
-      })
-        .select("itemPicture")
-        .select("name")
-        .select("endTime")
+      }).select(["itemPicture", "name", "endTime"])
       result.push({ auctions })
     } else if (request.params.status === "sold") {
       auctions = await AuctionItem.find({
@@ -247,10 +240,7 @@ module.exports = function (server, AuctionItem, Bid) {
         bidWinOffer: { $ne: 0 }
       })
         .where("bidWinOffer > reservationPrice")
-        .select("itemPicture")
-        .select("name")
-        .select("endTime")
-        .select("bidWinOffer")
+        .select(["itemPicture", "name", "endTime", "bidWinOffer"])
       result.push({ auctions })
     } else if (request.params.status === "unsold") {
       auctions = await AuctionItem.find({
@@ -259,9 +249,7 @@ module.exports = function (server, AuctionItem, Bid) {
         bidWinOffer: { $eq: 0 }
       })
         .where("bidWinOffer < reservationPrice")
-        .select("itemPicture")
-        .select("name")
-        .select("endTime")
+        .select(["itemPicture", "name", "endTime"])
       result.push({ auctions })
     }
     response.json(result)
