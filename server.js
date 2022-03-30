@@ -21,8 +21,6 @@ server.listen(3000, () => {
 // Use mongoose
 const mongoose = require("mongoose")
 
-
-
 // Customer model
 const Customer = mongoose.model(
   "Customer",
@@ -60,8 +58,8 @@ const AuctionItem = mongoose.model(
     },
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
-    startingPrice: Number,
-    reservationPrice: Number,
+    startingPrice: { type: Number, default: 0 },
+    reservationPrice: { type: Number, default: 0 },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     itemPicture: [{ type: String, required: true }],
     description: { type: String, required: true },
