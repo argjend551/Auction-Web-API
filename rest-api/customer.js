@@ -21,12 +21,32 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
       .select("publicEmail")
       .select("review");
 
+    let soldAuctionCount = await AuctionItem.find({ seller: request.params.id })
+      .where("bidWinner").ne(null)
+      .count()
+
     let soldAuction = await AuctionItem.find({ seller: request.params.id })
       .where("bidWinner").ne(null)
+      .select("name")
+      .select("description")
+      .select("bidWinner")
+      .select("bidWinOffer")
+
+    let boughtAuctionCount = await AuctionItem.find({ bidWinner: request.params.id }).count();
 
     let boughtAuction = await AuctionItem.find({ bidWinner: request.params.id })
+      .select("name")
+      .select("description")
+      .select("bidWinner")
+      .select("bidWinOffer")
 
-    response.json({ "My profile": result, "Sold Auctions": soldAuction, "Bought Auctions": boughtAuction });
+    response.json({
+      "My profile": result,
+      "Total Sold Auction Items": soldAuctionCount,
+      "Sold Auction Items' Detail": soldAuction,
+      "Total Bought Auction Items": boughtAuctionCount,
+      "Bought Auction Items' Detail": boughtAuction
+    });
   });
 
   // GET customer by id

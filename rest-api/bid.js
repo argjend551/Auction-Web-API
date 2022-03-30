@@ -82,7 +82,7 @@ module.exports = function (server, Bid, AuctionItem) {
   server.get("/data/allbids-withAuctionItemDetail", async (request, response) => {
     let result = await Bid.find().populate({
       path: "auctionItem",
-      select: "name endTime status"
+      select: "name endTime status bidWinner"
     });
     response.json(result);
   });
@@ -98,16 +98,31 @@ module.exports = function (server, Bid, AuctionItem) {
             from: "auctionitems",
             localField: "auctionItem",
             foreignField: "_id",
-            as: "Auction-Items"
+            as: "Auction-Items",
           }
         },
+        { "$unwind": "$Auction-Items" },
         {
           $match:
           {
             $and: [{ "Auction-Items.status": { $eq: true } },
             { "Auction-Items.endTime": { $gt: now } }]
           }
-        }])
+        }, {
+          $group: {
+            _id: {
+              allBids: "$buyers",
+              auctionItem: {
+                name: "$Auction-Items.name",
+                startTime: "$Auction-Items.startTime",
+                endTime: "$Auction-Items.endTime",
+                seller: "$Auction-Items.seller",
+                active: "$Auction-Items.status"
+              }
+            }
+          }
+        }
+      ])
       response.json(activItemWithBids);
     }
   );
@@ -139,5 +154,4 @@ module.exports = function (server, Bid, AuctionItem) {
     response.json(buyer);
 
   });
-
 };
