@@ -19,8 +19,7 @@ server.listen(3000, () => {
 });
 
 // Use mongoose
-const mongoose = require("mongoose")
-
+const mongoose = require("mongoose");
 
 // Customer model
 const Customer = mongoose.model(
@@ -84,14 +83,15 @@ const Bid = mongoose.model(
     ],
     seller: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Customer"
-    }
+      ref: "Customer",
+    },
   })
 );
 // rating model
 const Rating = mongoose.model(
   "Rating",
   new mongoose.Schema({
+    auctionItem: { type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" },
     ratingFrom: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
     buyerRating: {
       rating: { type: Number, min: 1, max: 5 },
@@ -101,7 +101,7 @@ const Rating = mongoose.model(
       rating: { type: Number, min: 1, max: 5 },
       comment: String,
     },
-    customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+    ratingTo: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
   })
 );
 
@@ -124,12 +124,11 @@ async function start() {
   );
   // add REST api
 
-  RestCustomer(server, Customer, AuctionItem, Bid)
-  RestAuthentication(server, Customer)
-  RestAuctionItems(server, AuctionItem, Bid)
-  RestCategory(server, Category)
-  RestBid(server, Bid, AuctionItem)
-  RestRating(server, Rating, Customer);
-
+  RestCustomer(server, Customer, AuctionItem, Bid);
+  RestAuthentication(server, Customer);
+  RestAuctionItems(server, AuctionItem, Bid);
+  RestCategory(server, Category);
+  RestBid(server, Bid, AuctionItem);
+  RestRating(server, Rating,AuctionItem);
 }
 start();
