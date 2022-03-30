@@ -1,6 +1,8 @@
 // Registration
 
-module.exports = function (server, Customer, AuctionItem, Bid) {
+module.exports = function (server, Customer, AuctionItem) {
+
+  //Create customer
   server.post("/data/customer", async (request, response) => {
     let item = await new Customer(request.body);
     let result = await item.save();
@@ -54,7 +56,7 @@ module.exports = function (server, Customer, AuctionItem, Bid) {
     let result = await Customer.findById(request.params.id);
     response.json(result);
   });
-
+  // Delete the customer
   server.delete("/data/customer/:id", async (request, response) => {
     let result = await Customer.findByIdAndRemove(request.params.id);
     response.json("Customer " + request.body.firstname + " removed");
