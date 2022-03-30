@@ -1,0 +1,268 @@
+RestAPI Auctionista - ReadMe
+
+The RestAPI Auctionista is a API as an interface in between the database that contains the customers, auctionitems etc and a frontend where
+the users can use the different functionalities on the website.
+The API gives access to a plethora of different options, a few of these are: 
+
+- Creating a user
+- Login 
+- Create an auction
+- Create a bid on an auction
+
+The API also contains the infrastructure for updating the different auctions timeframes, current bids and winners of auctions.
+
+The API is written in Javascript and the database is created in MongoDB with Mongoose.
+
+Table of content
+
+1. Server.js
+2. AuctionItems.js
+3. authentication.js
+4. bid.js
+5. category.js
+6. customer.js
+
+[1. Server.js]
+
+In this document the server is setup with express and a session is setup. There's also other dependencies that get initialized.
+Following is the different schemas that are the framework for adding information into the database.
+There's a few schemas that gets defined here:
+
+1. Schema for customers
+2. Schema for Auctionitems
+3. Schema for bids
+4. Schema for categories
+
+After the schemas has been defined, the imports for the rest api's different functions are added.
+Finally the API is initialized.
+
+[2. AuctionItems.js]
+
+This part of the API is where the Auctionitems are handeld and they are displayed in a variety of ways.
+Following are paths in the code with explanation of what sort of action they perform.
+
+server.post("/data/auctionItems", async (request, response)
+
+//Model and Schema for AuctionItem
+const AuctionItem = mongoose.model(
+  "AuctionItem",
+  new mongoose.Schema({
+    name: { type: String, required: true },
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true
+    },
+    startTime: { type: Date, required: true },
+    endTime: { type: Date, required: true },
+    startingPrice: Number,
+    reservationPrice: Number,
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    itemPicture: [{ type: String, required: true }],
+    description: { type: String, required: true },
+    status: Boolean,
+    bidWinner: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+    bidWinOffer: Number
+  })
+)
+
+- This part of the code along with the schema is used to add a new Auction item to the database.¨
+  Other parts of the API handles the different filtering of the data in the database.
+
+
+Next up is a GET method that retrieves all the different Auctions that exists in the database with all the information
+they contain.
+server.get("/data/auctionItems", async (request, response)
+
+
+The following GET Method shows just one of the Auctions from the database, the ":id" is changed to the ID of the Auction that 
+the user want to access, and shows all the information about this Auction. 
+server.get("/data/auctionItems/:id", async (request, response)
+
+
+This GET Method shows the data for when the user access the details page for an auction, insert the ID of the auction that you 
+want for the detailed information page and you will get the required information from the AuctionItem, aswell as information
+about the current bid and how many bids that has been put on the Auctionitem.
+server.get("/data/detailedViewAuctionItems/:auctionItemId",async (request, response)
+
+
+When using this Method you get a listview of a selection of items, the items that you retrieve with this GET is determined by 
+when the expire. Auctions closer to the expiration date will be closer to the top. 
+The listings have a specific amount of information. There's title, endtime, Current highest bid, how many bids that's been put on the item
+and how much time there's left for the auction.
+The amount of items are limited to 20.
+server.get("/data/listViewAuctionItems", async (request, response)
+
+
+Similar to the previous method, this one creates a list of different auction items, depending on which category that has been choosen. 
+Switch the ":categoryId" with a proper categoryId.
+server.get("/data/listViewAuctionItems/:categoryId",async (request, response)
+
+
+A delete method that is used to delete an Auctionitem.
+server.delete("/data/auctionItems/:id", async (request, response)
+
+
+This GET is used for the search function of the API, it searches the AuctionItem collection for any listing with the matching 
+search input and then shows the output in the same way as the listview.
+server.get("/data/listview-auctionItems/:search",async (request, response)
+
+
+Similar to the previous function, here you need to add a categoryID to search all the listings within the category.
+server.get("/data/listViewAuctionItems/:categoryID/:search",async (request, response)
+
+This is a PUT function that updates the Active auctionlistings and gives them the proper status they need to have depending
+on if the timeinterval has ended. This is supposed to run when the webiste is refreshed to update Auctions to the proper status.
+server.put("/data/auctionItems", async (request, response)
+
+[3. Authentication.js]
+
+This is the login part of the API. The user profiles from the Customer collection is logged in here with their Email as username
+and password.
+
+This post method is used to login, there is an authentication process which checks the email & password with the customer collection
+in the database.
+If a match is found, the user is logged into the system.
+server.post("/data/login", async (request, response)
+
+
+The method returns the first and lastname if the user is logged in. If the user is not logged in it returns a false.
+server.get("/data/login", async (request, response)
+
+This delete method is used to terminate the login session and effectively log the user out. It needs the customers credentials to log out.
+server.delete("/data/login", async (request, response)
+
+[4. bid.js]
+
+The bid part of the API works the different use of bids that is used on the auction websites. There's of course a part where you create a bid,
+but also parts where the user can get a list of the different auctions the bid on or what items they've sold.
+
+This post is what adds a bid along with the information put into the schema of bids. With the auctionitems ID and a few other points of information the bid can be created.
+The API has the logic to discern if the new bid that has been added is lower then the previous bid and in that case denies the creation of the bid and it also stops the seller of the item from participating in the bidding of the item to prevent the seller from artificially raising the price of the auction.
+// Bid model
+const Bid = mongoose.model(
+  "Bid",
+  new mongoose.Schema({
+    auctionItem: { type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" },
+    buyers: [
+      {
+        buyer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+        bidAmount: Number
+      }
+    ],
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer"
+    },
+    status: Boolean
+  })
+)
+server.post("/data/bid", async (request, response)
+
+
+A simple GET function that retrieves all the bids that exists with all the information that the bid collection contains.
+server.get("/data/bid", async (request, response)'
+
+
+This function retrieves all bids, but also displays the title of the auctionitem, it's status and which time it expires.
+server.get("/data/allbids-withAuctionItemDetail", async (request, response)
+
+
+This function displays all the active bids aswell as info from auctionItem, that can be bid on.
+server.get("/data/activeBids-withAuctionItemDetail",async (request, response)
+
+
+A function to search for a specific bid. Switch the ":id" for the bid id to find the bid.
+server.get("/data/bid/:id", async (request, response)
+
+
+A DELETE function, insert the id of the bid and remove the bid a user put on an auctionItem.
+server.delete("/data/bid/:id", async (request, response)
+
+
+With this function you'll add the id of a user instead of ":sellerId" and the function will return a list of all the items
+the user put up for auction.
+server.get("/data/sellers/:sellerId", async (request, response)
+
+
+GET for finding all the auctionItems the user has bid on, it includes the bid with amount etc aswell as the title of the auction.
+change ":buyerId" for the users id.
+server.get("/data/buyer/:buyerId", async (request, response)
+
+[4. Category]
+
+The category is one of the more simple collections in the database. It contains the different categories you can search in.
+
+This is the post of the categories, it follows the category schema and adds a new category to the collection.
+server.post("/data/categories", async (request, response)
+
+const Category = mongoose.model(
+"Category",
+new mongoose.Schema({
+name: String
+})
+)
+
+This function GETs and displays all the different categories available in the category collection 
+server.get("/data/categories", async (request, response)
+
+GET one category, insert the categoryId instead of ":id".
+server.get("/data/categories/:id", async (request, response)
+
+
+DELETE one category, insert the categoryId instead of ":id" to delete the category.
+server.delete("/data/categories/:id", async (request, response)
+
+[5. Customer]
+
+The final part of the API is the scripts for creating, finding and deleting a userprofile. The email and password is what's used 
+for the authentication scripts and the customers name is used in for example the auctionItems to determine who the seller of the 
+items are.
+
+This function along with the schema is the parts you need to create a new user. 
+
+server.post("/data/customer", async (request, response)
+
+const Customer = mongoose.model(
+  "Customer",
+  new mongoose.Schema({
+    firstname: String,
+    lastname: String,
+    email: { type: String, unique: true, required: true, minlength: 8 },
+    password: String,
+    pictureURL: String,
+    cellphone: String,
+    address: {
+      street: String,
+      city: String
+    },
+    publicEmail: String
+  })
+)
+
+
+This is a function that GETs all customers from the customer collection.
+server.get("/data/customer", async (request, response)
+
+
+Here's a GET that is used to get a few of the different datapoints of the user so that they can be displayed to other users of the website, as a contact point when selling or buying items.
+Just put the users ID instead of the ":id".
+server.get("/data/customer/profile/:id", async (request, response)
+
+
+A simple GET method that looks for 1 customer by ID. Just change the ":id" to the customerId.
+server.get("/data/customer/:id", async (request, response)
+
+
+When you need to delete a customer, switch the ":id" for the customers id that needs to be deleted. 
+server.delete("/data/customer/:id", async (request, response)
+
+
+
+
+
+
+
+
+
+
