@@ -1,25 +1,25 @@
-const express = require("express")
-const server = express()
-server.use(express.json())
+const express = require("express");
+const server = express();
+server.use(express.json());
 
 // adding session
-session = require("express-session")
+session = require("express-session");
 server.use(
   session({
     secret: "iejgieohgiehdfgdfgdflg,rrtrp",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }
+    cookie: { secure: false },
   })
-)
+);
 
 // server start
 server.listen(3000, () => {
-  console.log("server started at http://localhost:3000/data")
-})
+  console.log("server started at http://localhost:3000/data");
+});
 
 // Use mongoose
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 // Customer model
 const Customer = mongoose.model(
@@ -33,19 +33,20 @@ const Customer = mongoose.model(
     cellphone: String,
     address: {
       street: String,
-      city: String
+      city: String,
     },
-    publicEmail: String
+    publicEmail: String,
+    ratings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Rating" }],
   })
-)
+);
 //Model and Schema for Categories
 const Category = mongoose.model(
   "Category",
   new mongoose.Schema({
-    name: String
+    name: String,
     // auctionItems: [{ type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" }]
   })
-)
+);
 //Model and Schema for AuctionItem
 const AuctionItem = mongoose.model(
   "AuctionItem",
@@ -54,7 +55,7 @@ const AuctionItem = mongoose.model(
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
-      required: true
+      required: true,
     },
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
@@ -65,9 +66,9 @@ const AuctionItem = mongoose.model(
     description: { type: String, required: true },
     status: Boolean,
     bidWinner: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
-    bidWinOffer: Number
+    bidWinOffer: Number,
   })
-)
+);
 
 // Bid model
 const Bid = mongoose.model(
@@ -77,39 +78,57 @@ const Bid = mongoose.model(
     buyers: [
       {
         buyer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
-        bidAmount: Number
-      }
+        bidAmount: Number,
+      },
     ],
     seller: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Customer"
+      ref: "Customer",
     },
-    status: Boolean
   })
-)
+);
+// rating model
+const Rating = mongoose.model(
+  "Rating",
+  new mongoose.Schema({
+    auctionItem: { type: mongoose.Schema.Types.ObjectId, ref: "AuctionItem" },
+    ratingFrom: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+    buyerRating: {
+      rating: { type: Number, min: 1, max: 5 },
+      comment: String,
+    },
+    sellerRating: {
+      rating: { type: Number, min: 1, max: 5 },
+      comment: String,
+    },
+    ratingTo: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
+  })
+);
 
 // rest api
-const RestCustomer = require("./rest-api/customer.js")
-const RestAuthentication = require("./rest-api/authentication.js")
-const RestAuctionItems = require("./rest-api/auctionItems.js")
-const RestCategory = require("./rest-api/category.js")
+const RestCustomer = require("./rest-api/customer.js");
+const RestAuthentication = require("./rest-api/authentication.js");
+const RestAuctionItems = require("./rest-api/auctionItems.js");
+const RestCategory = require("./rest-api/category.js");
 
-const RestBid = require("./rest-api/bid.js")
-
+const RestBid = require("./rest-api/bid.js");
+const RestRating = require("./rest-api/rating.js");
 // Connect to the mongo database atlas
 async function start() {
   await mongoose.connect(
     "mongodb+srv://Auctionista_Grupp_C:FjsfzO6md5gq6Idk@cluster-auctionista-gru.ql1dv.mongodb.net/Cluster-Auctionista-Grupp-C?retryWrites=true&w=majority",
     () => {
-      console.log("MongoDB Connected")
+      console.log("MongoDB Connected");
     },
     (e) => console.error(e)
-  )
+  );
   // add REST api
-  RestCustomer(server, Customer)
-  RestAuthentication(server, Customer)
-  RestAuctionItems(server, AuctionItem, Bid)
-  RestCategory(server, Category)
-  RestBid(server, Bid, AuctionItem)
+
+  RestCustomer(server, Customer, AuctionItem, Bid);
+  RestAuthentication(server, Customer);
+  RestAuctionItems(server, AuctionItem, Bid);
+  RestCategory(server, Category);
+  RestBid(server, Bid, AuctionItem);
+  RestRating(server, Rating,AuctionItem);
 }
-start()
+start();

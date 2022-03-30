@@ -11,10 +11,6 @@ module.exports = function (server, Bid, AuctionItem) {
     let newBid = request.body.buyers.bidAmount;
     let item = await new Bid(request.body);
     let itemIfExits = await Bid.find({ auctionItem: item.auctionItem });
-    let newBuyer = {};
-    newBuyer.buyer = request.body.buyers.buyer;
-    newBuyer.bidAmount = request.body.buyers.bidAmount;
-
     let auctionitem = await AuctionItem.findById(item.auctionItem);
     let startPrice = auctionitem.startingPrice;
     let auctionActiv = auctionitem.status;
@@ -28,15 +24,24 @@ module.exports = function (server, Bid, AuctionItem) {
         }).select("buyers");
         let bidList = buyersList[buyersList.length - 1].buyers;
         let currentBid = bidList[bidList.length - 1].bidAmount;
-
+        let currentBuyer = bidList[bidList.length - 1].buyer;
         if (buyer !== seller) {
           if (newBid > startPrice && newBid > currentBid) {
-            let item = await Bid.findOneAndUpdate(
-              { auctionItem: request.body.auctionItem },
-              { $push: { buyers: newBuyer } }
-            );
-            let result = await item.save();
-            return response.json(result);
+            if (buyer == currentBuyer) {
+              let item = await Bid.findOneAndUpdate(
+                { auctionItem: request.body.auctionItem },
+                { $pull: { buyers: { buyer: currentBuyer, bidAmount: currentBid } } });
+              let item2 = await Bid.findOneAndUpdate(
+                { auctionItem: request.body.auctionItem },
+                { $push: { buyers: { buyer: buyer, bidAmount: newBid } } });
+              return response.json("You have the highest bid: " + currentBid + "kr, now is uppdated to " + newBid + " kr");
+            } else {
+              let item = await Bid.findOneAndUpdate(
+                { auctionItem: request.body.auctionItem },
+                { $push: { buyers: { buyer: buyer, bidAmount: newBid } } });
+              let result = await item.save();
+              return response.json(result);
+            }
           } else if (
             newBid == currentBid ||
             newBid < currentBid ||
@@ -44,9 +49,7 @@ module.exports = function (server, Bid, AuctionItem) {
             newBid == startPrice
           ) {
             return response.json(
-              "The current bid is " +
-              currentBid +
-              " kr, your bid must be higher than " + currentBid + " kr."
+              "The current bid is " + currentBid + " kr, your bid must be higher than " + currentBid + " kr."
             );
           }
         } else {
@@ -82,7 +85,7 @@ module.exports = function (server, Bid, AuctionItem) {
   server.get("/data/allbids-withAuctionItemDetail", async (request, response) => {
     let result = await Bid.find().populate({
       path: "auctionItem",
-      select: "name endTime status"
+      select: "name endTime status bidWinner"
     });
     response.json(result);
   });
@@ -91,23 +94,39 @@ module.exports = function (server, Bid, AuctionItem) {
   server.get(
     "/data/activeBids-withAuctionItemDetail",
     async (request, response) => {
-
-      let nowTime = new Date();
-
-      let auctionItemWithBids = await Bid.find().populate({
-        path: "auctionItem",
-        match: {
-          status: { $ne: false }, endTime: { $gt: nowTime }
+      let now = new Date();
+      let activItemWithBids = await Bid.aggregate([
+        {
+          $lookup: {
+            from: "auctionitems",
+            localField: "auctionItem",
+            foreignField: "_id",
+            as: "Auction-Items",
+          }
         },
-        select: "name endTime status"
-      });
-      let activeBids = [];
-      for (let bid of auctionItemWithBids) {
-        if (bid.auctionItem !== null) {
-          activeBids.push(bid)
+        { "$unwind": "$Auction-Items" },
+        {
+          $match:
+          {
+            $and: [{ "Auction-Items.status": { $eq: true } },
+            { "Auction-Items.endTime": { $gt: now } }]
+          }
+        }, {
+          $group: {
+            _id: {
+              allBids: "$buyers",
+              auctionItem: {
+                name: "$Auction-Items.name",
+                startTime: "$Auction-Items.startTime",
+                endTime: "$Auction-Items.endTime",
+                seller: "$Auction-Items.seller",
+                active: "$Auction-Items.status"
+              }
+            }
+          }
         }
-      }
-      response.json(activeBids);
+      ])
+      response.json(activItemWithBids);
     }
   );
 
@@ -138,5 +157,4 @@ module.exports = function (server, Bid, AuctionItem) {
     response.json(buyer);
 
   });
-
 };

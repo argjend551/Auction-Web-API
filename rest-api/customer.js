@@ -1,6 +1,7 @@
 // Registration
 
-module.exports = function (server, Customer) {
+module.exports = function (server, Customer, AuctionItem) {
+
   //Create customer
   server.post("/data/customer", async (request, response) => {
     let item = await new Customer(request.body);
@@ -19,9 +20,35 @@ module.exports = function (server, Customer) {
     let result = await Customer.findById(request.params.id)
       .select("firstname")
       .select("pictureURL")
-      .select("publicEmail");
+      .select("publicEmail")
+      .select("review");
 
-    response.json(result);
+    let soldAuctionCount = await AuctionItem.find({ seller: request.params.id })
+      .where("bidWinner").ne(null)
+      .count()
+
+    let soldAuction = await AuctionItem.find({ seller: request.params.id })
+      .where("bidWinner").ne(null)
+      .select("name")
+      .select("description")
+      .select("bidWinner")
+      .select("bidWinOffer")
+
+    let boughtAuctionCount = await AuctionItem.find({ bidWinner: request.params.id }).count();
+
+    let boughtAuction = await AuctionItem.find({ bidWinner: request.params.id })
+      .select("name")
+      .select("description")
+      .select("bidWinner")
+      .select("bidWinOffer")
+
+    response.json({
+      "My profile": result,
+      "Total Sold Auction Items": soldAuctionCount,
+      "Sold Auction Items' Detail": soldAuction,
+      "Total Bought Auction Items": boughtAuctionCount,
+      "Bought Auction Items' Detail": boughtAuction
+    });
   });
 
   // GET customer by id
