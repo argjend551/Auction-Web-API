@@ -17,9 +17,13 @@ module.exports = function (server, Rating, AuctionItem) {
 
     if (ratingFrom !== ratingTo && !auctionActiv) {
       if (ratingFrom == winner || ratingFrom == seller) {
-        let item = await new Rating(request.body);
-        let result = await item.save();
-        await response.json(result);
+        if (ratingTo == seller || ratingTo == winner) {
+          let item = await new Rating(request.body);
+          let result = await item.save();
+          await response.json(result);
+        } else {
+          response.json("You are not the bid winner or seller.");
+        }
       } else {
         response.json("You are not the bid winner or seller.");
       }
@@ -31,10 +35,10 @@ module.exports = function (server, Rating, AuctionItem) {
   // get user rating as seller
 
   server.get("/data/sellerRate/:id", async (request, response) => {
-    let item = await Rating.find()
+    let item = await Rating.find({ sellerRating: { $exists: true, $ne: null } })
+      .select("sellerRating")
       .where("ratingTo")
       .equals(request.params.id)
-      .select("sellerRating")
       .populate({
         path: "ratingTo ratingFrom",
         select: "pictureURL firstname",
@@ -45,15 +49,16 @@ module.exports = function (server, Rating, AuctionItem) {
 
   // get user rating as seller
   server.get("/data/buyerRate/:id", async (request, response) => {
-    let item = await Rating.find()
+    let item = await Rating.find({ buyerRating: { $exists: true, $ne: null } })
+      .select("buyerRating")
       .where("ratingTo")
       .equals(request.params.id)
-      .select("buyerRating")
       .populate({
         path: "ratingTo ratingFrom",
         select: "pictureURL firstname",
       })
       .exec();
+
     response.json(item);
   });
 };
