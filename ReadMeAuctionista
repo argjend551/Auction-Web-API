@@ -111,6 +111,10 @@ server.get("/data/listview-auctionItems/:search",async (request, response)
 Similar to the previous function, here you need to add a categoryID to search all the listings within the category.
 server.get("/data/listViewAuctionItems/:categoryID/:search",async (request, response)
 
+Another GET is used based on the status of the AuctionItem. Insert one of the following: active, ended, sold and unsold instead of
+":status" and you can search for auctions based on their status.
+server.get("/data/auctionItem/:status", async (request, response)
+
 This is a PUT function that updates the Active auctionlistings and gives them the proper status they need to have depending
 on if the timeinterval has ended. This is supposed to run when the webiste is refreshed to update Auctions to the proper status.
 server.put("/data/auctionItems", async (request, response)
