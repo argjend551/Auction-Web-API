@@ -33,7 +33,7 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("buyers")
       let bidList, currentBid, numberOfBids
       if (bid[0] === undefined) {
-        ; (currentBid = 0), (numberOfBids = 0)
+        ;(currentBid = 0), (numberOfBids = 0)
       } else {
         bidList = bid[bid.length - 1].buyers
         currentBid = bidList[bidList.length - 1].bidAmount
@@ -54,7 +54,7 @@ module.exports = function (server, AuctionItem, Bid) {
     }
   )
 
-  //To get all auctionItems summarized in a listview.
+  //To get the first 20 auctionItems summarized in a listview.
   server.get("/data/listViewAuctionItems", async (request, response) => {
     let nowTime = new Date()
     let bids = await Bid.find()
@@ -77,7 +77,7 @@ module.exports = function (server, AuctionItem, Bid) {
       )
       let minutes = Math.floor(
         (timeLeft - (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
-        (60 * 1000)
+          (60 * 1000)
       )
       auctionTimeLeft =
         days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
@@ -182,16 +182,55 @@ module.exports = function (server, AuctionItem, Bid) {
       response.json(result)
     }
   )
-  //Filter auctionItems on status: active, ended, sold and unsold
+  //Filter auctionItems on status: active, ended, sold and unsold.
   server.get("/data/auctionItem/:status", async (request, response) => {
-    let auctions
+    let bids = await Bid.find()
+    let auctions,
+      bidExists,
+      currentBid,
+      numberOfBids,
+      bid,
+      item,
+      timeLeft,
+      auctionTimeLeft
     let nowTime = new Date()
+    let result = []
 
     if (request.params.status === "active") {
       auctions = await AuctionItem.find({ status: true })
         .select("itemPicture")
         .select("name")
         .select("endTime")
+      for (let i = 0; i < auctions.length; i++) {
+        item = auctions[i]
+        timeLeft = item.endTime.getTime() - nowTime.getTime()
+        let days = Math.floor(timeLeft / (24 * 60 * 60 * 1000))
+        let hours = Math.floor(
+          (timeLeft - days * (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+        )
+        let minutes = Math.floor(
+          (timeLeft -
+            (days * (24 * 60 * 60 * 1000) + hours * (60 * 60 * 1000))) /
+            (60 * 1000)
+        )
+        auctionTimeLeft =
+          days + " dagar, " + hours + " timmar, " + minutes + " minuter kvar"
+        bidExists = false
+        for (let j = 0; j < bids.length; j++) {
+          bid = bids[j]
+          if (String(bid.auctionItem) === String(item._id)) {
+            bidExists = true
+            currentBid = bid.buyers[bid.buyers.length - 1].bidAmount
+            numberOfBids = bid.buyers.length
+            result.push({ item, currentBid, numberOfBids, auctionTimeLeft })
+          }
+        }
+        if (!bidExists) {
+          currentBid = 0
+          numberOfBids = 0
+          result.push({ item, currentBid, numberOfBids, auctionTimeLeft })
+        }
+      }
     } else if (request.params.status === "ended") {
       auctions = await AuctionItem.find({
         status: false,
@@ -200,6 +239,7 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("itemPicture")
         .select("name")
         .select("endTime")
+      result.push({ auctions })
     } else if (request.params.status === "sold") {
       auctions = await AuctionItem.find({
         status: false,
@@ -211,6 +251,7 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("name")
         .select("endTime")
         .select("bidWinOffer")
+      result.push({ auctions })
     } else if (request.params.status === "unsold") {
       auctions = await AuctionItem.find({
         status: false,
@@ -221,8 +262,9 @@ module.exports = function (server, AuctionItem, Bid) {
         .select("itemPicture")
         .select("name")
         .select("endTime")
+      result.push({ auctions })
     }
-    response.json(auctions)
+    response.json(result)
   })
 
   //Update all entries status.
